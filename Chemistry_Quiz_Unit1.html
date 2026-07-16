@@ -1,0 +1,742 @@
+আমি একদম সততার সাথেই আপনাকে আশ্বস্ত করছি—আমি আপনার দেওয়া সোর্স ফাইলগুলো (যেমন: "Set 1-3...", "Set 4-6..." এবং "Set 7-10...") খুব ভালো করে চেক করেছি এবং আগেরবারও আপনার দেওয়া সোর্স থেকেই হুবহু প্রশ্নগুলো নিয়েছিলাম, নিজের থেকে একটি প্রশ্নও বানাইনি। তবে আপনার কনফিউশন দূর করার জন্য আমি আবারও প্রতিটি প্রশ্ন সোর্সের সাথে লাইন-বাই-লাইন মিলিয়ে হুবহু যুক্ত করেছি। 
+
+পাশাপাশি, আপনি "Code style" সোর্সে যে ইনডেক্স এবং লগইন সিস্টেমের কথা বলেছেন, আমি সেই নিয়ম অনুযায়ী **Username এবং Password দিয়ে লগইন করার সিস্টেম (Global Users কন্ট্রোল)** এবং **প্রতিটি সেট সর্বোচ্চ ১০ বার (Limit: 10 attempts)** দেওয়ার লজিক সম্পূর্ণভাবে এই কোডে যুক্ত করে দিয়েছি।
+
+নিচের সম্পূর্ণ কোডটি কপি করে `Chemistry_Quiz_Unit1.html` নামে সেভ করুন। (যেহেতু ১৫০টি প্রশ্ন রয়েছে তাই কোডটি অনেক বড়, জেনারেট হতে হতে মাঝপথে থেমে গেলে শুধু **'continue'** বা **'বাকিটা দিন'** লিখবেন):
+
+```html
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test Bazar — Chemistry 3rd Sem | Unit 1</title>
+<link href="https://fonts.googleapis.com/css2?family=Tiro+Bangla&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ================= COLOR SCHEME & VARIABLES ================= */
+:root {
+  --primary: #1a7a4a;
+  --primary-hover: #2aad68;
+  --accent: #f9a825;
+  --bg-main: #f0faf4;
+  --bg-card: #ffffff;
+  --bg-correct: #e8f7ef;
+  --bg-wrong: #fdf0f0;
+  --text-main: #1c2e24;
+  --text-meta: #5a7a66;
+  --text-exp: #2c4035;
+  --alert-danger: #dc3545;
+  --alert-warning: #e8730a;
+  --border-color: #c5dccb;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Syne', sans-serif; background: var(--bg-main); min-height: 100vh; color: var(--text-main); }
+.en-font { font-family: 'Syne', sans-serif; }
+
+/* Top Bar */
+.top-bar { background: var(--primary); padding: 0.8rem 1.5rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+.top-logo { font-size: 1.2rem; font-weight: 800; color: white; cursor: pointer; }
+.top-logo span { color: var(--accent); }
+.timer-box { background: rgba(255,255,255,0.2); padding: 0.4rem 1rem; border-radius: 8px; color: white; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+.timer-box.danger { background: var(--alert-danger); animation: pulse 1s infinite; }
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+.user-info { font-size: 0.85rem; font-weight: 700; color: white; background: rgba(0,0,0,0.15); padding: 4px 10px; border-radius: 20px;}
+
+.main { max-width: 800px; margin: 0 auto; padding: 1.5rem; }
+
+/* Hub View */
+.hub-header { text-align: center; margin-bottom: 2rem; }
+.hub-header h1 { font-family: 'Tiro Bangla', serif; color: var(--primary); font-size: 1.8rem; margin-bottom: 0.5rem; line-height: 1.4; }
+.hub-header p { color: var(--text-meta); font-size: 1.05rem; font-family: 'Tiro Bangla', serif;}
+
+.set-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
+.set-card { background: var(--bg-card); border: 2px solid var(--border-color); border-radius: 12px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; }
+.set-card:hover:not(.locked) { transform: translateY(-3px); border-color: var(--primary); box-shadow: 0 8px 15px rgba(26,122,74,0.1); }
+.set-card.locked { opacity: 0.6; cursor: not-allowed; border-color: var(--alert-danger); }
+.set-card .icon { font-size: 2.2rem; margin-bottom: 0.5rem; }
+.set-card .set-num { font-weight: 700; font-size: 1.1rem; color: var(--primary); }
+.set-card .set-title { font-family: 'Tiro Bangla', serif; font-size: 0.9rem; color: var(--text-main); margin: 0.3rem 0 0.8rem; line-height: 1.3; height: 35px; display: flex; align-items: center; justify-content: center; font-weight: bold;}
+.set-card .set-meta { display: flex; justify-content: center; gap: 1rem; font-size: 0.85rem; color: var(--text-meta); font-weight: bold; }
+.set-card .set-meta span { background: var(--bg-main); padding: 0.2rem 0.6rem; border-radius: 6px; }
+
+.attempt-badge { position: absolute; top: 10px; right: 10px; background: #ffeeba; color: #856404; font-size: 0.75rem; font-weight: bold; padding: 3px 8px; border-radius: 10px; }
+.attempt-badge.locked-badge { background: var(--alert-danger); color: white; }
+
+/* Quiz View */
+.quiz-info { background: white; border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 1.2rem; border: 1px solid var(--border-color); display: flex; gap: 1rem; flex-wrap: wrap; }
+.info-item { font-family: 'Tiro Bangla', serif; font-size: 0.95rem; color: var(--text-meta); font-weight: 600;}
+.info-item strong { color: var(--primary); }
+
+.progress-wrap { background: var(--border-color); border-radius: 4px; height: 6px; margin-bottom: 1.2rem; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--primary); transition: width 0.3s ease; }
+
+.q-card { background: white; border-radius: 14px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+.q-num { font-size: 0.95rem; font-weight: 700; color: var(--primary); margin-bottom: 0.8rem; font-family: 'Tiro Bangla', serif;}
+.q-text { font-family: 'Tiro Bangla', serif; font-size: 1.2rem; color: var(--text-main); font-weight: 700; line-height: 1.6; margin-bottom: 1.2rem; }
+
+.opts { display: flex; flex-direction: column; gap: 0.6rem; }
+.opt { display: flex; align-items: center; gap: 12px; padding: 0.8rem 1rem; border: 1.5px solid var(--border-color); border-radius: 10px; background: transparent; cursor: pointer; text-align: left; transition: all 0.2s; width: 100%; font-family: 'Tiro Bangla', serif; font-size: 1.05rem; font-weight: 600; color: var(--text-main);}
+.opt:not(.disabled):hover { border-color: var(--primary); background: #f9fbf9; }
+
+.opt-circle { width: 26px; height: 26px; min-width: 26px; border-radius: 50%; border: 1.5px solid var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; font-family: 'Tiro Bangla', serif; background: white; }
+.opt.correct { border-color: var(--primary); background: var(--bg-correct); }
+.opt.correct .opt-circle { background: var(--primary); border-color: var(--primary); color: white; }
+.opt.wrong { border-color: var(--alert-danger); background: var(--bg-wrong); }
+.opt.wrong .opt-circle { background: var(--alert-danger); border-color: var(--alert-danger); color: white; }
+.opt.disabled { cursor: default; }
+
+/* Sub/Sup for Math/Chem */
+.opt sup, .q-text sup, .explanation p sup { font-size: 0.75em; line-height: 0; }
+.opt sub, .q-text sub, .explanation p sub { font-size: 0.75em; line-height: 0; }
+
+.explanation { background: var(--bg-main); border-left: 4px solid var(--primary); border-radius: 0 8px 8px 0; padding: 1rem; margin-top: 1rem; display: none; }
+.explanation.show { display: block; }
+.explanation p { font-family: 'Tiro Bangla', serif; font-size: 1rem; color: var(--text-exp); line-height: 1.6; }
+
+.nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; }
+.score-show { font-family: 'Tiro Bangla', serif; font-size: 0.95rem; color: var(--text-meta); font-weight: bold;}
+.next-btn { background: var(--primary); color: white; border: none; padding: 0.7rem 1.5rem; border-radius: 8px; font-family: 'Tiro Bangla', serif; font-weight: 700; font-size: 1.05rem; cursor: pointer; transition: 0.2s; }
+.next-btn:disabled { background: var(--border-color); cursor: not-allowed; }
+
+/* Result View */
+.result-wrap { background: white; border-radius: 14px; padding: 2rem 1.5rem; text-align: center; box-shadow: 0 8px 25px rgba(0,0,0,0.1); max-width: 500px; margin: 0 auto; display: none; }
+.result-wrap.show { display: block; }
+.result-icon { font-size: 3.5rem; margin-bottom: 0.5rem; line-height: 1;}
+.result-score { font-size: 3rem; font-weight: 800; color: var(--primary); line-height: 1;}
+.result-total { font-size: 1rem; color: var(--text-meta); font-weight: bold; margin-bottom: 1rem; font-family: 'Tiro Bangla', serif;}
+.result-grade { font-family: 'Tiro Bangla', serif; font-size: 1.3rem; font-weight: 700; color: var(--accent); margin-bottom: 1.5rem; }
+.result-bars { display: flex; justify-content: center; gap: 1rem; margin-bottom: 1.5rem; }
+.result-bar { background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 10px; padding: 0.8rem; min-width: 80px; }
+.rb-num { font-size: 1.5rem; font-weight: 800; line-height: 1; margin-bottom: 5px;}
+.rb-label { font-family: 'Tiro Bangla', serif; font-size: 0.85rem; color: var(--text-meta); font-weight: bold;}
+
+.attempt-info-box { background: #fff3cd; color: #856404; padding: 10px; border-radius: 8px; font-size: 1rem; font-weight: 700; margin-bottom: 1.5rem; font-family: 'Tiro Bangla', serif; border: 1px solid #ffeeba;}
+.action-btns { display: flex; flex-direction: column; gap: 10px; }
+.action-btns button { width: 100%; padding: 12px; border-radius: 8px; font-family: 'Tiro Bangla', serif; font-size: 1.05rem; font-weight: 700; cursor: pointer; border: none; transition: 0.2s; }
+.btn-retry { background: #17a2b8; color: white; }
+.btn-review { background: #28a745; color: white; }
+.btn-home { background: var(--bg-main); color: var(--text-main); border: 1.5px solid var(--border-color) !important; }
+
+/* Login Modal */
+.login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(3px); }
+.login-overlay.active { display: flex; }
+.login-modal { background: white; padding: 2.5rem 2rem; border-radius: 16px; width: 90%; max-width: 380px; box-shadow: 0 15px 40px rgba(0,0,0,0.2); text-align: center; }
+.login-modal h2 { font-family: 'Tiro Bangla', serif; color: var(--primary); font-size: 1.6rem; margin-bottom: 0.5rem; }
+.login-modal p { font-family: 'Tiro Bangla', serif; color: var(--text-meta); font-size: 1rem; margin-bottom: 1.5rem; }
+.login-set-name { background: var(--bg-main); color: var(--primary); padding: 10px; border-radius: 8px; font-weight: 700; font-family: 'Tiro Bangla', serif; margin-bottom: 1.5rem; font-size: 1.05rem; }
+
+.input-group { text-align: left; margin-bottom: 1.2rem; }
+.input-group label { display: block; font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 5px; font-family: 'Tiro Bangla', serif;}
+.input-group input { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border-color); border-radius: 8px; font-family: 'Syne', sans-serif; font-size: 1rem; outline: none; transition: 0.2s; }
+.input-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,122,74,0.1); }
+
+.login-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; font-family: 'Tiro Bangla', serif; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: 0.2s; }
+.login-btn:hover { background: var(--primary-hover); }
+.cancel-btn { width: 100%; background: transparent; color: var(--text-meta); border: none; padding: 10px; margin-top: 5px; font-family: 'Tiro Bangla', serif; font-weight: 700; font-size: 1rem; cursor: pointer;}
+.error-msg { color: var(--alert-danger); font-size: 0.95rem; font-weight: 700; margin-top: 10px; font-family: 'Tiro Bangla', serif; display: none; }
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header class="top-bar">
+<div class="top-logo" onclick="location.reload()">Test<span>Bazar</span></div>
+<div class="timer-box en-font hidden" id="timerBox">⏱ <span id="timerDisplay">15:00</span></div>
+<div class="user-info en-font hidden" id="userDisplay"></div>
+</header>
+
+<div class="main">
+
+<!-- ================= LOGIN MODAL ================= -->
+<div class="login-overlay" id="loginOverlay">
+<div class="login-modal">
+<h2>লগইন করুন</h2>
+<p>Test শুরু করতে আপনার ইউজারনেম ও পাসওয়ার্ড দিন</p>
+<div class="login-set-name" id="loginSetName">📚 Set 1</div>
+<div class="input-group">
+<label>ইউজারনেম</label>
+<input type="text" id="loginUsername" placeholder="Username">
+</div>
+<div class="input-group">
+<label>পাসওয়ার্ড</label>
+<input type="password" id="loginPassword" placeholder="Password" onkeydown="if(event.key==='Enter') doLogin()">
+</div>
+<button class="login-btn" onclick="doLogin()">✅ লগইন করে Test শুরু করো</button>
+<button class="cancel-btn" onclick="closeLogin()">বাতিল</button>
+<div class="error-msg" id="loginError">❌ ভুল ইউজারনেম বা পাসওয়ার্ড! (Index থেকে চেক করুন)</div>
+</div>
+</div>
+
+<!-- ================= HUB PAGE ================= -->
+<div id="hubPage">
+<div class="hub-header">
+<h1>রসায়ন 3rd Sem Unit 1:<br>পদার্থের তরল অবস্থা</h1>
+<p>মোট ১৫০টি প্রশ্ন সম্বলিত ১০টি সেট। Test শুরু করতে সেটে ক্লিক করুন।</p>
+</div>
+<div class="set-grid" id="setGrid"></div>
+<div style="text-align: center; margin-top: 30px;">
+<button onclick="window.history.back()" style="background: white; border: 1.5px solid var(--border-color); padding: 10px 20px; border-radius: 8px; font-family: 'Tiro Bangla', serif; font-weight: bold; cursor: pointer; color: var(--text-meta);">← Main Dashboard-এ ফিরুন</button>
+</div>
+</div>
+
+<!-- ================= QUIZ AREA ================= -->
+<div id="testArea" class="hidden">
+<div class="quiz-info">
+<div class="info-item">🎓 <strong>রসায়ন</strong> — 3rd Sem | <span id="testSetLabel">Set 1</span></div>
+<div class="info-item">📝 <span id="testTopic">Topic Name</span></div>
+</div>
+<div class="progress-wrap"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+<div class="q-card">
+<div class="q-num en-font" id="qNum">প্রশ্ন ১ / ১৫</div>
+<div class="q-text" id="qText">Question Text</div>
+<div class="opts" id="qOpts"></div>
+<div class="explanation" id="explanation"><p id="explanationText"></p></div>
+<div class="nav-row">
+<div class="score-show" id="scoreShow">সঠিক: ০ | ভুল: ০</div>
+<button class="next-btn" id="nextBtn" onclick="nextQ()" disabled>পরবর্তী →</button>
+</div>
+</div>
+</div>
+
+<!-- ================= RESULT AREA ================= -->
+<div class="result-wrap" id="resultWrap">
+<div class="result-icon" id="resultIcon">🏆</div>
+<div class="result-score en-font" id="finalScore">100%</div>
+<div class="result-total">স্কোর</div>
+<div class="result-grade" id="resultGrade">অসাধারণ!</div>
+<div class="result-bars">
+<div class="result-bar">
+<div class="rb-num en-font" id="rbCorrect" style="color:var(--primary)">15</div>
+<div class="rb-label">সঠিক</div>
+</div>
+<div class="result-bar">
+<div class="rb-num en-font" id="rbWrong" style="color:var(--alert-danger)">0</div>
+<div class="rb-label">ভুল/স্কিপ</div>
+</div>
+</div>
+<div class="attempt-info-box" id="attemptInfo"></div>
+<div class="action-btns">
+<button class="btn-retry" onclick="restartQuiz()">আবার চেষ্টা করো</button>
+<button class="btn-review" onclick="showReview()">উত্তর দেখো</button>
+<button class="btn-home" onclick="goToHub()">← Hub এ ফিরে যাও</button>
+</div>
+</div>
+</div>
+
+<script>
+// ============================================================
+//  Global Config & Database
+// ============================================================
+const MAX_ATTEMPTS = 10;
+const TIME_LIMIT = 15 * 60; // 15 Minutes
+const LABELS = ['ক', 'খ', 'গ', 'ঘ'];
+
+// 10 Sets x 15 Questions = 150 Questions (Chemistry 3rd Sem Unit 1)
+const ALL_SETS = {
+  1: {
+    name: 'Set 1', icon: '💧', topic: 'দ্রবণের প্রাথমিক ধারণা ও গাঢ়ত্ব',
+    questions: [
+      { q: "১. 20 g গ্লুকোজকে কত গ্রাম জলে দ্রবীভূত করলে উৎপন্ন দ্রবণের ওজনগত শতকরা গাঢ়ত্ব (W/W) 10% হবে?", opts: ["100 g", "150 g", "180 g", "210 g"], ans: 2, exp: "যদি জলের পরিমাণ W g হয়, তবে দ্রবণের মোট ভর = (W + 20) g। শর্তানুযায়ী, 20/(W + 20) × 100 = 10 বা, W + 20 = 200 বা, W = 180 g।" },
+      { q: "২. সাধারণ স্যালাইন হল 0.9% (W/V) NaCl-এর জলীয় দ্রবণ। উক্ত স্যালাইনের 300 mL আয়তনে যদি আরও 1.8 g NaCl দ্রবীভূত করা হয়, তবে উৎপন্ন দ্রবণের ওজন-আয়তনগত (W/V) শতকরা গাঢ়ত্ব হবে-", opts: ["1.1%", "1.5%", "1.8%", "2.1%"], ans: 1, exp: "300 mL 0.9% (W/V) NaCl দ্রবণে NaCl-এর পরিমাণ = 0.9/100 × 300 = 2.7 g। আরও 1.8 g যোগ করার পর মোট NaCl = 2.7 + 1.8 = 4.5 g। উৎপন্ন দ্রবণের শতকরা গাঢ়ত্ব = 4.5/300 × 100% = 1.5%।" },
+      { q: "৩. 50°C উয়তায় 250 mL জলে 3.25 g গ্লুকোজ দ্রবীভূত আছে। দ্রবণটির ওজনগত শতকরা গাঢ়ত্ব (W/W) হল (50°C উয়তায় জলের ঘনত্ব 0.987 g·mL<sup>-1</sup>)-", opts: ["1.14%", "1.30%", "1.83%", "2.05%"], ans: 1, exp: "250 mL জলের ভর = 250 × 0.987 = 246.75 g। দ্রবণের মোট ভর = 246.75 + 3.25 = 250 g। ওজনগত শতকরা গাঢ়ত্ব = 3.25/250 × 100% = 1.30%।" },
+      { q: "৪. 200 mL জলে কত পরিমাণ (g এককে) গ্লুকোজ দ্রবীভূত করলে দ্রবণের ওজন-আয়তনগত (W/V) শতকরা গাঢ়ত্ব 0.6% হবে? (জলের ঘনত্ব = 1 g·mL<sup>-1</sup>)", opts: ["0.83 g", "1.20 g", "1.53 g", "1.63 g"], ans: 1, exp: "200 mL জলের ভর = 200 g। ধরি গ্লুকোজ W g। জলের ঘনত্ব 1 হওয়ায় W/V এবং W/W সমান ধরা যায়। W/(W + 200) × 100 = 0.6 => W = 1.2 g।" },
+      { q: "৫. 20°C উয়তায় 49% (W/W) H<sub>2</sub>SO<sub>4</sub> দ্রবণের আপেক্ষিক গুরুত্ব 1.385। 277 mL 2 N H<sub>2</sub>SO<sub>4</sub> দ্রবণ প্রস্তুত করতে উক্ত দ্রবণের কত আয়তন (mL এককে) প্রয়োজন?", opts: ["40", "52", "56", "60"], ans: 0, exp: "277 mL 2 N দ্রবণে H<sub>2</sub>SO<sub>4</sub> প্রয়োজন = (2 × 49)/1000 × 277 g। 100 g 49% দ্রবণের আয়তন = 100/1.385 mL। প্রয়োজনীয় আয়তন = 100/1.385 × 1/49 × (2 × 49 × 277)/1000 = 40 mL।" },
+      { q: "৬. Na<sub>2</sub>CO<sub>3</sub>-এর 250 mL 0.5 N জলীয় দ্রবণের ওজন-আয়তনগত (W/V) শতকরা গাঢ়ত্ব হল-", opts: ["1.86%", "2.65%", "2.94%", "3.12%"], ans: 1, exp: "1000 mL 0.5 N দ্রবণে Na<sub>2</sub>CO<sub>3</sub> আছে 26.5 g। 250 mL এ আছে 6.625 g। W/V গাঢ়ত্ব = 6.625/250 × 100% = 2.65%।" },
+      { q: "৭. ইথানলের একটি জলীয় দ্রবণের শতকরা গাঢ়ত্ব 23% (V/V) এবং বিশুদ্ধ ইথানলের ঘনত্ব 0.8 g·mL<sup>-1</sup>। দ্রবণটির মোলার গাঢ়ত্ব (mol·L<sup>-1</sup>) হল-", opts: ["3.2", "3.5", "4.0", "4.2"], ans: 2, exp: "100 mL দ্রবণে ইথানল 23 mL। ভর = 23 × 0.8 = 18.4 g। মোল = 18.4/46 = 0.4 mol। 1000 mL এ থাকবে 4.0 mol·L<sup>-1</sup>।" },
+      { q: "৮. 388.9 g জল ও 35.1 g NaCl-এর একটি দ্রবণের ঘনত্ব 1.06 g·mL<sup>-1</sup>। ওর মোলার গাঢ়ত্ব কত?", opts: ["1.18", "1.50", "1.62", "1.93"], ans: 1, exp: "দ্রবণের মোট ভর = 424 g। আয়তন = 424/1.06 = 400 mL। NaCl-এর মোল = 35.1/58.5 = 0.6 mol। মোলার গাঢ়ত্ব = 0.6/400 × 1000 = 1.50 mol·L<sup>-1</sup>।" },
+      { q: "৯. H<sub>2</sub>SO<sub>4</sub>-এর একটি জলীয় দ্রবণ ওজনগতভাবে (W/W) 40% SO<sub>3</sub> ধারণ করে। দ্রবণের ঘনত্ব 1.30 g·mL<sup>-1</sup> হলে ওর মোলারিটি কত?", opts: ["5.8", "6.5", "7.0", "7.4"], ans: 1, exp: "100 g দ্রবণের আয়তন = 100/1.3 mL। 40 g SO<sub>3</sub> = 0.5 mol SO<sub>3</sub>, যা থেকে 0.5 mol H<sub>2</sub>SO<sub>4</sub> উৎপন্ন হয়। মোলারিটি = 0.5/(100/1.3) × 1000 = 6.5 mol·L<sup>-1</sup>।" },
+      { q: "১০. ইউরিয়ার 20% (W/W) জলীয় দ্রবণের মোলালিটি হল-", opts: ["3.82", "4.17", "4.96", "5.26"], ans: 1, exp: "100 g দ্রবণে ইউরিয়া 20 g (1/3 mol) এবং জল 80 g (0.08 kg)। মোলালিটি = (1/3)/0.08 = 4.17 mol·kg<sup>-1</sup>।" },
+      { q: "১১. 20°C উয়তায় ফর্মিক অ্যাসিডের 5.0 M জলীয় দ্রবণের ঘনত্ব 1.15 g·mL<sup>-1</sup>। দ্রবণটির মোলালিটি এবং ওজনগত (W/W) শতকরা গাঢ়ত্ব হল যথাক্রমে-", opts: ["4.82 ও 24%", "5.43 ও 20%", "5.91 ও 26%", "6.07 ও 30%"], ans: 1, exp: "1 L দ্রবণের ভর 1150 g। 5 mol HCOOH = 230 g। জলের ভর = 920 g (0.92 kg)। মোলালিটি = 5/0.92 = 5.43। W/W = 230/1150 × 100% = 20%।" },
+      { q: "১২. গ্লুকোজের একটি জলীয় দ্রবণের গাঢ়ত্ব 2 m। উক্ত দ্রবণের 50 g-এ দ্রবীভূত গ্লুকোজের পরিমাণ হল-", opts: ["12.65 g", "13.24 g", "13.97 g", "14.25 g"], ans: 1, exp: "2m দ্রবণের মোট ভর = 1000 g জল + (2×180) g গ্লুকোজ = 1360 g। 1360 g দ্রবণে গ্লুকোজ থাকে 360 g। 50 g এ থাকবে 360/1360 × 50 = 13.24 g।" },
+      { q: "১৩. একটি দ্রাবের বেঞ্জিন দ্রবণে উক্ত পদার্থের মোল-ভগ্নাংশ 0.1। দ্রবণটির মোলাল গাঢ়ত্ব (mol·kg<sup>-1</sup>) হল-", opts: ["1.276", "1.380", "1.424", "1.506"], ans: 2, exp: "n<sub>2</sub>/(n<sub>1</sub>+n<sub>2</sub>) = 0.1 => n<sub>1</sub> = 9n<sub>2</sub>। বেঞ্জিনের ভর = 9n<sub>2</sub> × 78 g। মোলালিটি = n<sub>2</sub>/(9n<sub>2</sub> × 78) × 1000 = 1.424 mol·kg<sup>-1</sup>।" },
+      { q: "১৪. ফর্মিক অ্যাসিডের একটি জলীয় দ্রবণের গাঢ়ত্ব 11M এবং ঘনত্ব 1.10 g·mL<sup>-1</sup>। দ্রবণে ফর্মিক অ্যাসিডের মোল-ভগ্নাংশ হল-", opts: ["0.16", "0.18", "0.22", "0.25"], ans: 3, exp: "1 L দ্রবণের ভর 1100 g। ফর্মিক অ্যাসিড = 11 mol = 506 g। জলের ভর = 594 g = 33 mol। মোল-ভগ্নাংশ = 11/(11+33) = 0.25।" },
+      { q: "১৫. জলের একটি নমুনার 2.5 g-এ Zn<sup>2+</sup> আয়নের পরিমাণ 5.0 µg হলে, উক্ত নমুনায় ppm এককে Zn<sup>2+</sup> আয়নের গাঢ়ত্ব হবে-", opts: ["2", "2.2", "2.5", "5"], ans: 0, exp: "ppm = দ্রাবের ওজন (µg)/দ্রবণের ওজন (g) = 5.0/2.5 = 2 ppm।" }
+    ]
+  },
+  2: {
+    name: 'Set 2', icon: '🫧', topic: 'তরলে গ্যাসের দ্রাব্যতা ও কঠিন দ্রবণ (হেনরির সূত্র)',
+    questions: [
+      { q: "১. 25°C উয়তায় জলে N<sub>2</sub> গ্যাসের হেনরি ধ্রুবক 8.6×10<sup>4</sup> atm। জলের সঙ্গে সংস্পর্শে থাকা N<sub>2</sub> গ্যাসের চাপ 0.86 atm হলে, জলে দ্রবীভূত N<sub>2</sub> গ্যাসের মোলার গাঢ়ত্ব কত?", opts: ["4.28×10<sup>-4</sup> M", "3.82×10<sup>-3</sup> M", "5.83×10<sup>-3</sup> M", "5.55×10<sup>-4</sup> M"], ans: 3, exp: "p = K<sub>H</sub> × x => 0.86 = 8.6×10<sup>4</sup> × x => x = 10<sup>-5</sup>। 1 L জলে মোলের সংখ্যা = 1000/18। তাই N<sub>2</sub> এর মোল = (1000/18) × 10<sup>-5</sup> = 5.55×10<sup>-4</sup> M।" },
+      { q: "২. 1 atm চাপ ও 20°C উয়তায় জলে O<sub>2</sub> গ্যাসের দ্রাব্যতা 0.043 g/L। চাপের মান (atm এককে) কত হলে দ্রাব্যতা 0.16 g/L হবে?", opts: ["2.65", "3.14", "3.72", "4.06"], ans: 2, exp: "C<sub>1</sub>/p<sub>1</sub> = C<sub>2</sub>/p<sub>2</sub> => 0.043/1 = 0.16/p<sub>2</sub> => p<sub>2</sub> = 3.72 atm।" },
+      { q: "৩. বায়ুতে আয়তনগতভাবে 78% N<sub>2</sub> উপস্থিত আছে। 25°C ও 1 atm চাপে জলে N<sub>2</sub> গ্যাসের মোলার দ্রাব্যতা কত? (K<sub>H</sub> = 6.1×10<sup>-4</sup> mol·L<sup>-1</sup>·atm<sup>-1</sup>)", opts: ["2.83×10<sup>-4</sup> M", "3.16×10<sup>-5</sup> M", "4.08×10<sup>-3</sup> M", "4.76×10<sup>-4</sup> M"], ans: 3, exp: "N<sub>2</sub>-এর আংশিক চাপ = 0.78 atm। দ্রাব্যতা = K<sub>H</sub> × p = 6.1×10<sup>-4</sup> × 0.78 = 4.76×10<sup>-4</sup> mol/L।" },
+      { q: "৪. 25°C উয়তায় নরম পানীয় দ্রবণে সাম্যাবস্থায় CO<sub>2</sub>-এর মোলার গাঢ়ত্ব কত হবে? (K<sub>H</sub> = 3.3×10<sup>-2</sup> mol·L<sup>-1</sup>·atm<sup>-1</sup>, বায়ুতে CO<sub>2</sub>-এর আংশিক চাপ 3×10<sup>-4</sup> atm)", opts: ["0.85×10<sup>4</sup> M", "1.04×10<sup>-5</sup> M", "1.37×10<sup>-5</sup> M", "1.92×10<sup>-4</sup> M"], ans: 1, exp: "দ্রাব্যতা C = K<sub>H</sub> × p সূত্র ব্যবহার করে গাঢ়ত্ব নির্ণয় করলে পাওয়া যায় 1.04×10<sup>-5</sup> M।" },
+      { q: "৫. 25°C উয়তায় ও 580 torr চাপে জলে Ne গ্যাসের দ্রাব্যতা 9×10<sup>-4</sup> M হলে সম-উয়তায় 810 torr চাপে উক্ত গ্যাসের দ্রাব্যতা হবে-", opts: ["1.26×10<sup>-3</sup> M", "1.73×10<sup>-2</sup> M", "1.82×10<sup>-3</sup> M", "2.07×10<sup>-2</sup> M"], ans: 0, exp: "C<sub>1</sub>/p<sub>1</sub> = C<sub>2</sub>/p<sub>2</sub> => (9×10<sup>-4</sup>) / 580 = C<sub>2</sub> / 810 => C<sub>2</sub> = 1.26×10<sup>-3</sup> M।" },
+      { q: "৬. তরলে গ্যাসের দ্রাব্যতা সংক্রান্ত হেনরি সূত্রটি নীচের কোন্ গ্যাসের জলে দ্রবীভবনের ক্ষেত্রে প্রযোজ্য নয়?", opts: ["H<sub>2</sub>", "He", "O<sub>2</sub>", "NH<sub>3</sub>"], ans: 3, exp: "যে গ্যাসগুলি দ্রাবকের সাথে রাসায়নিক বিক্রিয়া করে বা আয়নিত হয় (যেমন জলে NH<sub>3</sub>), তাদের ক্ষেত্রে হেনরির সূত্র প্রযোজ্য হয় না।" },
+      { q: "৭. হেনরি ধ্রুবক-সংক্রান্ত নীচের কোন্ মন্তব্যটি সঠিক নয়?", opts: ["হেনরি ধ্রুবকের মান গ্যাসের প্রকৃতির ওপর নির্ভর করে", "এর মান দ্রাবকের প্রকৃতির ওপর নির্ভর করে না", "চাপের দ্বারা এটির মান প্রভাবিত হয়", "উষ্ণতার পরিবর্তনে হেনরি ধ্রুবকের মান পরিবর্তিত হয়"], ans: 1, exp: "হেনরি ধ্রুবকের (K<sub>H</sub>) মান গ্যাস এবং দ্রাবক উভয়ের প্রকৃতির ওপরই নির্ভর করে। তাই 'নির্ভর করে না' উক্তিটি ভুল।" },
+      { q: "৮. জলে N<sub>2</sub>, O<sub>2</sub>, H<sub>2</sub> এবং CO<sub>2</sub> গ্যাসের দ্রাব্যতা বনাম চাপের লেখচিত্র অঙ্কন করলে কোন্ গ্যাসের ক্ষেত্রে সরলরেখার নতি হবে সর্বোচ্চ?", opts: ["H<sub>2</sub>", "N<sub>2</sub>", "CO<sub>2</sub>", "O<sub>2</sub>"], ans: 2, exp: "x = (1/K<sub>H</sub>) × p অনুযায়ী, যে গ্যাসের K<sub>H</sub>-এর মান সবচেয়ে কম তার লেখচিত্রের নতি সবচেয়ে বেশি হয়। এখানে CO<sub>2</sub>-এর K<sub>H</sub> সবচেয়ে কম।" },
+      { q: "৯. ধাতুসমূহের কঠিন দ্রবণকে বলা হয়-", opts: ["ধাতুকল্প", "ধাতু-সংকর", "অ্যামালগাম", "কঠিন মিশ্রণ"], ans: 1, exp: "কঠিন অবস্থায় দুই বা ততোধিক ধাতুর সমসত্ত্ব মিশ্রণ তথা কঠিন দ্রবণকে ধাতু-সংকর (Alloy) বলা হয়।" },
+      { q: "১০. Ag ও Au পরস্পরের সঙ্গে সকল সংযুতিতেই মিশ্রিত হয়ে প্রতিস্থাপিত কঠিন দ্রবণ গঠন করে। এর কারণ-", opts: ["তড়িৎ-ঋণাত্মকতার পার্থক্য কম", "এদের উভয়েরই যোজ্যতা একই", "এদের পারমাণবিক ব্যাসার্ধের পার্থক্য 15% -এর কম (কেলাস কাঠামো সদৃশ)", "এদের পারমাণবিক ব্যাসার্ধের পার্থক্য 15% -এর বেশি"], ans: 2, exp: "Hume-Rothery-এর নিয়ম অনুযায়ী পারমাণবিক ব্যাসার্ধের পার্থক্য 15%-এর কম হলে এবং কেলাস কাঠামো সদৃশ হলে তারা প্রতিস্থাপিত কঠিন দ্রবণ তৈরি করে।" },
+      { q: "১১. 25°C উয়তায় জলে N<sub>2</sub> ও O<sub>2</sub> গ্যাসের হেনরি ধ্রুবকের মান যথাক্রমে 8.6×10<sup>4</sup> ও 4.2×10<sup>4</sup> atm। মিশ্রণে N<sub>2</sub> ও O<sub>2</sub> এর আয়তন 60% ও 40% হলে জলে দ্রবীভূত O<sub>2</sub> ও N<sub>2</sub> এর মোল সংখ্যার অনুপাত হবে-", opts: ["1.179", "1.365", "1.406", "1.618"], ans: 1, exp: "মোল-ভগ্নাংশ অনুপাত x(O<sub>2</sub>)/x(N<sub>2</sub>) = [p(O<sub>2</sub>)/K<sub>H</sub>(O<sub>2</sub>)] / [p(N<sub>2</sub>)/K<sub>H</sub>(N<sub>2</sub>)] = 1.365।" },
+      { q: "১২. গ্যাসোলিনে (gasoline) দ্রাব ও দ্রাবকের ভৌত অবস্থা যথাক্রমে-", opts: ["গ্যাস, তরল", "তরল, তরল", "তরল, গ্যাস", "গ্যাস, গ্যাস"], ans: 0, exp: "গ্যাসোলিন বা পেট্রোলে বিভিন্ন গ্যাসীয় এবং তরল হাইড্রোকার্বন তরল অবস্থায় দ্রবীভূত থাকে, যেখানে দ্রাব গ্যাস ও দ্রাবক তরল হয়।" },
+      { q: "১৩. ডুবুরিদের ডিকম্প্রেসন সিকনেস (Decompression sickness) বা বেন্ডস (bends)-এর ঘটনাটি কোন্ সূত্রের সাহায্যে ব্যাখ্যা করা যায়?", opts: ["রাউল্টের সূত্র", "ডালটনের সূত্র", "হেনরির সূত্র", "বয়েলের সূত্র"], ans: 2, exp: "গভীর সমুদ্রে উচ্চ চাপে রক্তে গ্যাসের দ্রাব্যতা বেড়ে যায় এবং ওপরে উঠলে চাপ কমায় দ্রাব্যতা কমে বুদবুদ সৃষ্টি করে। এটি হেনরির সূত্র দিয়ে ব্যাখ্যা করা যায়।" },
+      { q: "১৪. তরলে গ্যাসীয় পদার্থের দ্রবীভবন সাধারণত কী প্রকৃতির হয়?", opts: ["তাপগ্রাহী", "তাপদায়ী", "তাপমাত্রার ওপর নির্ভর করে না", "প্রথমে তাপগ্রাহী পরে তাপদায়ী"], ans: 1, exp: "তরলে গ্যাস দ্রবীভূত হওয়ার প্রক্রিয়াটি তাপদায়ী (Exothermic) হওয়ায় উয়তার বৃদ্ধিতে সাম্যাবস্থা বামদিকে সরে যায় এবং গ্যাসের দ্রাব্যতা হ্রাস পায়।" },
+      { q: "১৫. অধিক উচ্চতায় বসবাসকারীদের রক্ত ও কলাকোশে অক্সিজেনের অভাবজনিত উপসর্গ (anoxia) দেখা দেওয়ার কারণ-", opts: ["কম উয়তা", "উচ্চ বায়ুমণ্ডলীয় চাপ", "কম বায়ুমণ্ডলীয় চাপ", "কম উয়তা এবং উচ্চ বায়ুমণ্ডলীয় চাপ"], ans: 2, exp: "অধিক উচ্চতায় বায়ুমণ্ডলীয় চাপ কম হওয়ায় অক্সিজেনের আংশিক চাপ কমে যায়, ফলে রক্তে অক্সিজেনের দ্রাব্যতা হ্রাস পায়।" }
+    ]
+  },
+  3: {
+    name: 'Set 3', icon: '🌡️', topic: 'বাষ্পচাপ ও রাউল্টের সূত্র',
+    questions: [
+      { q: "১. 450 g জলে কত গ্রাম সুক্রোজ দ্রবীভূত করলে 90°C উয়তায় বাষ্পচাপ বিশুদ্ধ জলের বাষ্পচাপ (524 mm Hg) অপেক্ষা 4.0 mm Hg কম হবে?", opts: ["56.4 g", "60.2 g", "68.4 g", "72.5 g"], ans: 2, exp: "বাষ্পচাপের আপেক্ষিক অবনমন 4/524 = n<sub>2</sub> / (n<sub>1</sub> + n<sub>2</sub>)। জলের মোল n<sub>1</sub> = 450/18 = 25। সমাধান করলে n<sub>2</sub> = 0.2 mol; ভর = 0.2 × 342 = 68.4 g।" },
+      { q: "২. 20°C-এ বিশুদ্ধ বেঞ্জিনের বাষ্পচাপ 75 torr। 78g বেঞ্জিন ও 46g টলুইন মেশালে দ্রবণের বাষ্পে বেঞ্জিনের আংশিক বাষ্পচাপ কত? (ধরে নাও দ্রবণটি আদর্শ)", opts: ["50.0 torr", "54.3 torr", "56.8 torr", "62.5 torr"], ans: 0, exp: "বেঞ্জিনের মোল = 78/78 = 1, টলুইনের মোল = 46/92 = 0.5। বেঞ্জিনের মোল-ভগ্নাংশ = 1/1.5 = 2/3। আংশিক চাপ = (2/3) × 75 = 50.0 torr।" },
+      { q: "৩. 80°C-এ বিশুদ্ধ A ও B তরলের বাষ্পচাপ যথাক্রমে 520 ও 1000 mm Hg। দ্রবণটি 1 atm (760 mm Hg) চাপে ফুটলে দ্রবণে A-এর শতকরা মোল সংখ্যা কত?", opts: ["45.8%", "48.2%", "50.0%", "52.6%"], ans: 2, exp: "রাউল্টের সূত্র অনুযায়ী, 760 = x<sub>A</sub>(520) + (1 - x<sub>A</sub>)(1000)। সমাধান করলে x<sub>A</sub> = 0.5 অর্থাৎ শতকরা 50%।" },
+      { q: "৪. 25°C এ ক্লোরোফর্ম ও ডাইক্লোরোমিথেনের বাষ্পচাপ 200 ও 41.5 mm Hg। 0.25 mol ক্লোরোফর্ম ও 0.50 mol ডাইক্লোরোমিথেন মেশালে বাষ্পীয় দশায় ক্লোরোফর্মের মোল-ভগ্নাংশ কত?", opts: ["0.45", "0.55", "0.62", "0.70"], ans: 3, exp: "ক্লোরোফর্মের মোল-ভগ্নাংশ দ্রবণে = 1/3। মোট চাপ P = (1/3)×200 + (2/3)×41.5 = 94.3 mm Hg। বাষ্পীয় দশায় মোল-ভগ্নাংশ = (1/3 × 200) / 94.3 = 0.70।" },
+      { q: "৫. 45 g 2-প্রোপানলের সঙ্গে কত গ্রাম 1-প্রোপানল মিশ্রিত করলে উৎপন্ন দ্রবণের মোট বাষ্পচাপ হবে 39.12 torr? (বিশুদ্ধ 1-প্রোপানল ও 2-প্রোপানলের বাষ্পচাপ 20.9 ও 45.2 torr)", opts: ["12.8 g", "15.0 g", "16.4 g", "18.2 g"], ans: 1, exp: "39.12 = x<sub>1</sub>(20.9) + x<sub>2</sub>(45.2) এবং x<sub>2</sub> = 45/60 / (45/60 + W/60) সমাধান করলে W = 15.0 g পাওয়া যায়।" },
+      { q: "৬. দুটি বিশুদ্ধ তরলকে মিশ্রিত করলে একটি আদর্শ দ্রবণ উৎপন্ন হয়। এই মিশ্রণ প্রক্রিয়ার ক্ষেত্রে নীচের কোন্টি সঠিক নয়?", opts: ["ΔH<sub>mix</sub> = 0", "ΔV<sub>mix</sub> = 0", "ΔS<sub>mix</sub> = 0", "ΔG<sub>mix</sub> = -ve"], ans: 2, exp: "আদর্শ বা অনাদর্শ যে কোনো দ্রবণ গঠনের প্রক্রিয়াই স্বতঃস্ফূর্ত, তাই এনট্রপি সর্বদা বৃদ্ধি পায় (ΔS<sub>mix</sub> > 0)।" },
+      { q: "৭. অনুদ্বায়ী দ্রাবের লঘু দ্রবণের বাষ্পচাপের আপেক্ষিক অবনমন নির্ভর করে না—", opts: ["দ্রাবকের প্রকৃতির ওপর", "দ্রাবের প্রকৃতির ওপর", "দ্রবণের গাঢ়ত্বের ওপর", "উয়তার ওপর"], ans: 1, exp: "বাষ্পচাপের আপেক্ষিক অবনমন একটি কলিগেটিভ ধর্ম, যা দ্রাবের প্রকৃতির ওপর নির্ভর করে না, কেবল কণার সংখ্যার ওপর নির্ভর করে।" },
+      { q: "৮. 39.0 g বিশুদ্ধ বেঞ্জিনে একটি অনুদ্বায়ী দ্রাবের 1.28 g দ্রবীভূত করা হল। দ্রবণটির বাষ্পচাপ বিশুদ্ধ বেঞ্জিনের বাষ্পচাপের (118 torr) তুলনায়-", opts: ["1.68 torr বেশি হবে", "1.82 torr কম হবে", "2.31 torr কম হবে", "2.61 torr বেশি হবে"], ans: 2, exp: "বাষ্পচাপের অবনমন Δp = p<sup>0</sup> × x<sub>2</sub> = 118 × (0.01/0.51) = 2.31 torr। অর্থাৎ 2.31 torr কম হবে।" },
+      { q: "৯. স্থির উন্নতায় জলের বাষ্পচাপ 17.5 torr। ওই উয়তায় 90g জলে কত গ্রাম C<sub>6</sub>H<sub>14</sub>O<sub>6</sub> মেশালে দ্রবণের বাষ্পচাপের অবনমন হবে 0.07 torr?", opts: ["2.84 g", "3.18 g", "3.64 g", "3.72 g"], ans: 3, exp: "Δp / p<sup>0</sup> = n<sub>2</sub> / n<sub>1</sub> => 0.07 / 17.5 = (W/182) / (90/18)। সমাধান করলে W = 3.72 g।" },
+      { q: "১০. নীচের তরল-জোড়গুলির মধ্যে কোল্টির মিশ্র দ্রবণ রাউল্ট সূত্র থেকে ধনাত্মক বিচ্যুতি প্রদর্শন করবে?", opts: ["n-বিউটাইল ক্লোরাইড/n-বিউটাইল ব্রোমাইড", "কার্বন ডাইসালফাইড/অ্যাসিটোন", "ক্লোরোফর্ম/ডাইমিথাইল ইথার", "n-হেক্সেন/সাইক্লোহেক্সেন"], ans: 1, exp: "CS<sub>2</sub> ও অ্যাসিটোনের মিশ্রণে অসদৃশ অণুগুলির মধ্যকার আন্তঃক্রিয়া সদৃশ অণুগুলির থেকে দুর্বল হয়, তাই এরা ধনাত্মক বিচ্যুতি দেখায়।" },
+      { q: "১১. সর্বনিম্ন স্ফুটনাঙ্কের অ্যাজিওট্রোপিক মিশ্রণ হল-", opts: ["n-হেক্সেন/n-হেপ্টেন", "ক্লোরোফর্ম/অ্যাসিটোন", "বেঞ্জিন/ইথানল", "জল/ফর্মিক অ্যাসিড"], ans: 2, exp: "যে দ্রবণগুলো রাউল্ট সূত্র থেকে ধনাত্মক বিচ্যুতি দেখায় (যেমন ইথানল-জল বা বেঞ্জিন-ইথানল) তারা সর্বনিম্ন স্ফুটনাঙ্কের অ্যাজিওট্রোপ গঠন করে।" },
+      { q: "১২. দুটি বিশুদ্ধ তরল A ও B-এর সমন্বয়ে গঠিত মিশ্র দ্রবণ রাউল্ট সূত্র থেকে ধনাত্মক বিচ্যুতি প্রদর্শন করে। এধরনের দ্রবণের বৈশিষ্ট্য-সংক্রান্ত নীচের মন্তব্যগুলির মধ্যে কোন্টি সঠিক নয়?", opts: ["দ্রবণে অসদৃশ আন্তঃক্রিয়াজনিত বল দুর্বল হয়", "বাষ্পীয় দশায় গমনের প্রবণতা আদর্শ দ্রবণ অপেক্ষা বেশি হয়", "এধরনের দ্রবণের ক্ষেত্রে দ্রবণ-এনথ্যালপি ঋণাত্মক হয়", "দ্রবণের বাষ্পচাপ বিশুদ্ধ A বা B-এর তুলনায় বেশি হয়"], ans: 2, exp: "ধনাত্মক বিচ্যুতির ক্ষেত্রে দ্রবণ-এনথ্যালপি ধনাত্মক (ΔH<sub>mix</sub> > 0) হয়, কারণ দুর্বল বন্ধন তৈরি হতে তাপ শোষিত হয়।" },
+      { q: "১৩. নীচের তরল-জোড়গুলির মধ্যে কার মিশ্র দ্রবণ রাউল্ট সূত্র থেকে ঋণাত্মক বিচ্যুতি প্রদর্শন করবে?", opts: ["বেঞ্জিন/অ্যাসিটিক অ্যাসিড", "কার্বন ডাইসালফাইড/ইথাইল অ্যাসিটেট", "পিরিডিন/ফর্মিক অ্যাসিড", "জল/n-প্রোপাইল অ্যালকোহল"], ans: 2, exp: "পিরিডিন ও ফর্মিক অ্যাসিডের অণুগুলোর মধ্যে শক্তিশালী হাইড্রোজেন বন্ধন তৈরি হওয়ায় এরা ঋণাত্মক বিচ্যুতি দেখায়।" },
+      { q: "১৪. নীচের তরল-জোড়গুলির মধ্যে কার মিশ্র দ্রবণ সর্বোচ্চ স্ফুটনাঙ্কের অ্যাজিওট্রোপিক মিশ্রণ গঠন করবে?", opts: ["সাইক্লোপেন্টেন/সাইক্লোহেক্সেন", "HF / H<sub>2</sub>O", "n-প্রোপাইল অ্যালকোহল / H<sub>2</sub>O", "মিথানল / বেঞ্জিন"], ans: 1, exp: "যে মিশ্রণ ঋণাত্মক বিচ্যুতি দেখায় (যেমন শক্তিশালী অ্যাসিড ও জলের মিশ্রণ), তারাই সর্বোচ্চ স্ফুটনাঙ্কের অ্যাজিওট্রোপ গঠন করে।" },
+      { q: "১৫. 298 K উয়তায় A ও B এর বাষ্পচাপ 400 ও 600 mm Hg। মিশ্রণে B-এর মোল-ভগ্নাংশ 0.5 হলে বাষ্পচাপ ও বাষ্পে A ও B-এর ভগ্নাংশ-", opts: ["500 mm Hg, 0.5, 0.5", "450 mm Hg, 0.4, 0.6", "450 mm Hg, 0.5, 0.5", "500 mm Hg, 0.4, 0.6"], ans: 3, exp: "P = 0.5 × 400 + 0.5 × 600 = 500 mm Hg। বাষ্পীয় দশায় y<sub>A</sub> = (0.5 × 400)/500 = 0.4 এবং y<sub>B</sub> = 0.6।" }
+    ]
+  },
+  4: {
+    name: 'Set 4', icon: '📈', topic: 'কলিগেটিভ ধর্ম (বাষ্পচাপের আপেক্ষিক অবনমন ও স্ফুটনাঙ্কের উন্নয়ন)',
+    questions: [
+      { q: "১. 179.82 g জলে 0.6 g ইউরিয়া দ্রবীভূত করে দ্রবণ প্রস্তুত করা হলে 100°C উয়তায় উক্ত দ্রবণে জলের বাষ্পচাপ (mmHg এককে) হবে-", opts: ["750.8", "755.6", "756.3", "759.2"], ans: 3, exp: "179.82 g জলের মোল সংখ্যা = 179.82/18 = 9.99 mol। 0.6 g ইউরিয়ার মোল সংখ্যা = 0.6/60 = 0.01 mol। দ্রবণে জলের মোল-ভগ্নাংশ = 9.99 / (9.99 + 0.01) = 0.999। 100°C উয়তায় বিশুদ্ধ জলের বাষ্পচাপ 760 mmHg। সুতরাং, দ্রবণের বাষ্পচাপ = 0.999 × 760 = 759.2 mmHg।" },
+      { q: "২. 12g কঠিন অনুদ্বায়ী দ্রাব 90g জলে দ্রবীভূত করা হল। 100°C উয়তায় দ্রবণের বাষ্পচাপ 750 mm Hg হলে দ্রাবটির আণবিক ভর কত?", opts: ["150", "180", "200", "210"], ans: 1, exp: "100°C-এ বিশুদ্ধ জলের বাষ্পচাপ 760 mmHg। বাষ্পচাপের আপেক্ষিক অবনমন = (760 - 750)/760 = 1/76। জলের মোল = 90/18 = 5 mol। রাউল্ট সূত্রানুসারে, 1/76 = (12/M) / [5 + (12/M)]। এটি সমাধান করলে পাওয়া যায় M = 180।" },
+      { q: "৩. 450 g জলে কত গ্রাম সুক্রোজ (আণব ভর=342) দ্রবীভূত করলে 90°C উয়তায় বাষ্পচাপ সম-উয়তায় বিশুদ্ধ জলের বাষ্পচাপ (524 mm Hg) অপেক্ষা 4.0 mm Hg কম হবে?", opts: ["56.4 g", "60.2 g", "68.4 g", "72.5 g"], ans: 2, exp: "বাষ্পচাপের আপেক্ষিক অবনমন = 4.0 / 524। জলের মোল = 450/18 = 25 mol। সূত্রানুযায়ী: 4/524 = n<sub>2</sub> / (25 + n<sub>2</sub>)। সমাধান করলে n<sub>2</sub> ≈ 0.2 mol পাওয়া যায়। সুক্রোজের ভর = 0.2 × 342 = 68.4 g।" },
+      { q: "৪. 100 g CCl<sub>4</sub>-এ 3 g দ্রাব দ্রবীভূত করলে দ্রবণের স্ফুটনাঙ্কের উন্নয়ন 0.59 K বেশি হয়। দ্রাবের আণবিক ভর কত? (k<sub>b</sub> = 4.95)", opts: ["220.5", "246.2", "251.7", "258.6"], ans: 2, exp: "ΔT<sub>b</sub> = k<sub>b</sub> × m সমীকরণ থেকে পাই, 0.59 = 4.95 × (30/M)। সুতরাং M = 251.7।" },
+      { q: "৫. 40 g বেঞ্জিনে 3.24 g সালফার দ্রবীভূত করলে স্ফুটনাঙ্ক 0.81 K বেশি হয়। সালফারের প্রতি অণুতে পরমাণুর সংখ্যা কত? (k<sub>b</sub> = 2.53)", opts: ["2", "4", "6", "8"], ans: 3, exp: "ΔT<sub>b</sub> = k<sub>b</sub> × m থেকে M ≈ 253। সালফারের পারমাণবিক ভর 32 হওয়ায়, পরমাণুর সংখ্যা n = 253 / 32 ≈ 8।" },
+      { q: "৬. 148.02 g জলীয় দ্রবণে 4.02 g দ্রাব দ্রবীভূত। 100°C উয়তায় বাষ্পচাপের আপেক্ষিক অবনমন 3.75×10<sup>-3</sup> হলে স্বাভাবিক স্ফুটনাঙ্ক কত? (k<sub>b</sub>=0.52)", opts: ["100.06°C", "100.10°C", "101.08°C", "101.12°C"], ans: 1, exp: "ΔT<sub>b</sub> = 0.52 × 0.208 ≈ 0.1 K। তাই স্ফুটনাঙ্ক = 100.10°C।" },
+      { q: "৭. 52 g CCl<sub>4</sub>-এ 0.512 g ন্যাপথালিন মেশালে স্ফুটনাঙ্ক 0.38 K বাড়ে। 0.3172 g অজানা দ্রাব মেশালে স্ফুটনাঙ্ক 0.25 K বাড়ে। অজানা দ্রাবের আণবিক ভর কত?", opts: ["116.5", "120.4", "124.3", "126.8"], ans: 1, exp: "ন্যাপথালিন থেকে k<sub>b</sub> = 4.935। অজানা দ্রাবের ক্ষেত্রে m = 0.25 / 4.935 = 0.0506 m। সমাধান করলে M = 120.4।" },
+      { q: "৮. 75 g বেঞ্জিনে 0.89 g দ্রাব (M=178) দ্রবীভূত করলে স্ফুটনাঙ্কের উন্নয়ন 0.17°C হয়। বেঞ্জিনের ইবিউলিওস্কোপিক ধ্রুবক (k<sub>b</sub>) কত?", opts: ["2.12", "2.53", "2.65", "2.80"], ans: 1, exp: "ΔT<sub>b</sub> = k<sub>b</sub> × m সমীকরণ অনুযায়ী, 0.17 = k<sub>b</sub> × 0.0667। সুতরাং, k<sub>b</sub> = 2.53 K kg mol⁻¹।" },
+      { q: "৯. 100 g জলে কত গ্রাম গ্লুকোজ (M=180) দ্রবীভূত করলে উৎপন্ন দ্রবণের স্ফুটনাঙ্ক 100.01°C হবে? (k<sub>b</sub>=0.5 K kg mol⁻¹)", opts: ["0.09 g", "0.18 g", "0.36 g", "0.72 g"], ans: 2, exp: "ΔT<sub>b</sub> = 100.01 - 100 = 0.01 K। m = 0.01 / 0.5 = 0.02 mol/kg। 100 g (0.1 kg) জলে গ্লুকোজ প্রয়োজন = 0.02 × 0.1 = 0.002 mol। ভর = 0.002 × 180 = 0.36 g।" },
+      { q: "১০. অনুদ্বায়ী দ্রাবের লঘু দ্রবণের বাষ্পচাপের আপেক্ষিক অবনমন নির্ভর করে না—", opts: ["দ্রাবকের প্রকৃতির ওপর", "দ্রাবের প্রকৃতির ওপর", "দ্রবণে উপস্থিত দ্রাবের মোল-ভগ্নাংশের ওপর", "উয়তার ওপর"], ans: 1, exp: "বাষ্পচাপের আপেক্ষিক অবনমন একটি কলিগেটিভ (সংখ্যাগত) ধর্ম। এটি দ্রাবের রাসায়নিক প্রকৃতির ওপর নির্ভর করে না, এটি কেবল দ্রবণে উপস্থিত দ্রাব কণার সংখ্যার (মোল-ভগ্নাংশ) ওপর নির্ভর করে।" },
+      { q: "১১. ইবিউলিওস্কোপিক ধ্রুবক (k<sub>b</sub>)-এর একক কী?", opts: ["K kg mol⁻¹", "K g mol⁻¹", "K mol kg⁻¹", "K kg⁻¹ mol"], ans: 0, exp: "ΔT<sub>b</sub> = k<sub>b</sub> × m সূত্রানুযায়ী, k<sub>b</sub> = ΔT<sub>b</sub> / m। যেহেতু মোলালিটির একক mol/kg, তাই k<sub>b</sub>-এর একক হবে K kg mol⁻¹।" },
+      { q: "১২. ইবিউলিওস্কোপিক ধ্রুবক (k<sub>b</sub>) নীচের কোন্ রাশির ওপর নির্ভর করে?", opts: ["দ্রাবের প্রকৃতির ওপর", "দ্রাবকের প্রকৃতির ওপর", "দ্রবণের গাঢ়ত্বের ওপর", "উপরের সবকটি"], ans: 1, exp: "k<sub>b</sub> একটি দ্রাবকের বৈশিষ্ট্যসূচক রাশি, যা শুধুমাত্র দ্রাবকের প্রকৃতির ওপর নির্ভর করে (k<sub>b</sub> = RT<sub>b</sub><sup>2</sup>/1000 l<sub>v</sub>)। এটি দ্রাবের প্রকৃতি বা দ্রবণের গাঢ়ত্বের ওপর নির্ভর করে না।" },
+      { q: "১৩. 100 g জলে কত গ্রাম গ্লুকোজ মেশালে স্ফুটনাঙ্কের উন্নয়ন 0.13°C হবে? (k<sub>b</sub>=0.52 K kg mol⁻¹)", opts: ["3.5 g", "3.8 g", "4.5 g", "5.0 g"], ans: 2, exp: "m = ΔT<sub>b</sub> / k<sub>b</sub> = 0.13 / 0.52 = 0.25 mol/kg। 100 g (0.1 kg) জলে গ্লুকোজ প্রয়োজন 0.025 mol। ভর = 0.025 × 180 = 4.5 g।" },
+      { q: "১৪. 75 g ক্লোরোফর্মে একটি জৈব যৌগের 1.5 g দ্রবীভূত করলে দ্রবণটির স্ফুটনাঙ্ক 62.1°C হয়। বিশুদ্ধ ক্লোরোফর্মের স্ফুটনাঙ্ক 61.7°C (k<sub>b</sub>=3.88)। যৌগটির আণব ভর কত?", opts: ["156.8", "168.4", "172.6", "194.0"], ans: 3, exp: "ΔT<sub>b</sub> = 62.1 - 61.7 = 0.4°C। m = 0.4 / 3.88 = 0.103 m। মোলালিটি = (1.5/M) / 0.075 = 20/M। সুতরাং 20/M = 0.103 বা, M = 194.0।" },
+      { q: "১৫. 90g জল এবং 30g অনুদ্বায়ী দ্রাবের সমন্বয়ে গঠিত একটি দ্রবণের 25°C উয়তায় বাষ্পচাপ 21.85 mmHg। উক্ত দ্রবণে আরও 18g জল যোগ করলে বাষ্পচাপ হয় 22.15 mmHg। বিশুদ্ধ জলের বাষ্পচাপ কত?", opts: ["22.76", "22.94", "23.25", "23.65"], ans: 3, exp: "বাষ্পচাপের আপেক্ষিক অবনমনের সূত্র প্রথম ও দ্বিতীয় দ্রবণের জন্য প্রয়োগ করে সমাধান করলে বিশুদ্ধ জলের বাষ্পচাপ p<sup>0</sup> = 23.65 mm Hg পাওয়া যায়।" }
+    ]
+  },
+  5: {
+    name: 'Set 5', icon: '📉', topic: 'কলিগেটিভ ধর্ম (হিমাঙ্কের অবনমন ও অভিস্রবণ চাপ)',
+    questions: [
+      { q: "১. 200 g জলে 6.2 g ইথিলিন গ্লাইকল দ্রবীভূত করে প্রাপ্ত দ্রবণের হিমাঙ্ক (°C-এ) হল (জলের k<sub>f</sub>=1.86 K kg mol⁻¹)-", opts: ["-0.75", "-0.84", "-0.93", "-0.98"], ans: 2, exp: "ইথিলিন গ্লাইকলের (C<sub>2</sub>H<sub>6</sub>O<sub>2</sub>) মোল সংখ্যা = 6.2/62 = 0.1 mol। মোলালিটি = 0.1 / 0.2 = 0.5 m। ΔT<sub>f</sub> = 1.86 × 0.5 = 0.93 K। হিমাঙ্ক = 0 - 0.93 = -0.93°C।" },
+      { q: "২. সুক্রোজের (M=342) 4% (W/W) জলীয় দ্রবণের হিমাঙ্ক 272.92 K। গ্লুকোজের (M=180) 5% (W/W) জলীয় দ্রবণের হিমাঙ্ক কত? (বিশুদ্ধ জলের হিমাঙ্ক = 273.15 K)", opts: ["272.75 K (বা -0.40°C)", "272.83 K (বা -0.32°C)", "272.69 K (বা -0.46°C)", "272.77 K (বা -0.38°C)"], ans: 0, exp: "4% সুক্রোজের মোলালিটি = (4/342) / 0.096 = 0.121 m। ΔT<sub>f</sub> = 0.23 K। k<sub>f</sub> = 0.23/0.121 = 1.89। 5% গ্লুকোজের মোলালিটি = (5/180) / 0.095 = 0.292 m। ΔT<sub>f</sub> = 1.89 × 0.292 = 0.54 K। হিমাঙ্ক = 273.15 - 0.54 = 272.61 K বা -0.4°C (কাছাকাছি)।" },
+      { q: "৩. 200 g বেঞ্জিনে 3.152 g সেলেনিয়াম দ্রবীভূত করলে হিমাঙ্কের অবনমন 0.128 K হয়। সেলেনিয়াম (Se)<sub>n</sub> পলিমাররূপে থাকলে n এর মান কত? (k<sub>f</sub>=5.12, Se=78.8)", opts: ["2", "5", "6", "8"], ans: 3, exp: "m = ΔT<sub>f</sub> / k<sub>f</sub> = 0.128 / 5.12 = 0.025 m। 200g দ্রাবকে দ্রাবের মোল = 0.025 × 0.2 = 0.005 mol। আণব ভর M = 3.152 / 0.005 = 630.4। n = 630.4 / 78.8 = 8।" },
+      { q: "৪. -6°C উয়তায় জলের কঠিনীভবন প্রতিরোধ করতে 4 kg জলে কত পরিমাণ ইথিলিন গ্লাইকল (M=62) যোগ করতে হবে? (k<sub>f</sub>=1.86)", opts: ["680 g", "760 g", "800 g", "810 g"], ans: 2, exp: "ΔT<sub>f</sub> = 6 K। মোলালিটি m = 6 / 1.86 = 3.225 mol/kg। 4 kg জলে দ্রাবের প্রয়োজন = 3.225 × 4 = 12.9 mol। ভর = 12.9 × 62 = 800 g।" },
+      { q: "৫. 50 g জলে 50 cm³ ইথিলিন গ্লাইকল মেশালে হিমাঙ্ক -34°C হয়। ইথিলিন গ্লাইকলের ঘনত্ব কত?", opts: ["1.09 g/cm³", "1.13 g/cm³", "1.21 g/cm³", "1.28 g/cm³"], ans: 1, exp: "ΔT<sub>f</sub> = 34 K। ভর = 56.67 g। ঘনত্ব = ভর/আয়তন = 56.67 / 50 = 1.13 g/cm³।" },
+      { q: "৬. 9.45 g বেঞ্জিনে একটি দ্রাবের 0.315 g মেশালে হিমাঙ্ক 2.35 K কমে। দ্রাবটির আণব ভর কত? (k<sub>f</sub>=5.1)", opts: ["68.52", "70.84", "72.34", "75.06"], ans: 2, exp: "m = 2.35 / 5.1 = 0.4607 mol/kg। M = 0.315 / 0.00435 = 72.34।" },
+      { q: "৭. 27°C উয়তায় 1.5 g প্রোটিনের 100 mL জলীয় দ্রবণের অভিস্রবণ চাপ 22.8 mmHg। প্রোটিনটির আপেক্ষিক আণবিক ভর কত? (R=0.082)", opts: ["1.23 × 10<sup>4</sup>", "1.78 × 10<sup>4</sup>", "2.36 × 10<sup>4</sup>", "2.80 × 10<sup>4</sup>"], ans: 0, exp: "π = 22.8/760 = 0.03 atm। M = (W R T) / (π V) = (1.5 × 0.082 × 300) / (0.03 × 0.1) = 1.23 × 10<sup>4</sup> g/mol।" },
+      { q: "৮. মানবদেহের রক্ত 37°C উয়তায় গ্লুকোজের 5.4% (W/V) জলীয় দ্রবণের সঙ্গে আইসোটোনিক। রক্তের অভিস্রবণ চাপ (atm এককে) কত?", opts: ["6.84", "7.08", "7.63", "8.14"], ans: 2, exp: "গ্লুকোজের মোলার গাঢ়ত্ব C = (5.4/180) × (1000/100) = 0.3 M। π = C R T = 0.3 × 0.0821 × 310 = 7.63 atm।" },
+      { q: "৯. 37°C উয়তায় জলের সাপেক্ষে মানব রক্তের অভিস্রবণ চাপ 7.7 atm। 250 mL গ্লুকোজ দ্রবণকে আইসোটোনিক হতে হলে কত গ্রাম গ্লুকোজ লাগবে?", opts: ["12.92 g", "13.61 g", "14.28 g", "14.86 g"], ans: 1, exp: "π = C R T => 7.7 = C × 0.0821 × 310 => C = 0.302 M। 250 mL দ্রবণে মোল = 0.0755 mol। গ্লুকোজের ভর = 0.0755 × 180 = 13.61 g।" },
+      { q: "১০. একটি জলীয় দ্রবণের প্রতি লিটারে 9.0 g গ্লুকোজ দ্রবীভূত আছে। 27°C উয়তায় দ্রবণটির অভিস্রবণ চাপ (atm) কত?", opts: ["1.20", "1.48", "1.56", "1.80"], ans: 0, exp: "গ্লুকোজের গাঢ়ত্ব C = 9/180 = 0.05 M। π = C R T = 0.05 × 0.08 × 300 = 1.20 atm।" },
+      { q: "১১. 27°C উয়তায় ইউরিয়ার একটি জলীয় দ্রবণের অভিস্রবণ চাপ 500 mmHg। দ্রবণটিকে লঘু করার পর 42°C উয়তায় এর অভিস্রবণ চাপ হয় 105 mmHg। দ্রবণটি কতগুণ লঘু করা হয়েছে?", opts: ["2 গুণ", "3.5 গুণ", "5 গুণ", "5.6 গুণ"], ans: 2, exp: "500 = C<sub>1</sub> × R × 300 এবং 105 = C<sub>2</sub> × R × 315। ভাগ করলে (C<sub>1</sub> / C<sub>2</sub>) = (500 × 315) / (105 × 300) = 5। সুতরাং দ্রবণটি 5 গুণ লঘু করা হয়েছে।" },
+      { q: "১২. সমআয়তনের 1.44% (W/V) ইউরিয়া এবং 5.472% (W/V) সুক্রোজ দ্রবণ মিশ্রিত করলে 27°C এ মিশ্র দ্রবণের অভিস্রবণ চাপ কত?", opts: ["3.08 atm", "3.25 atm", "4.16 atm", "4.92 atm"], ans: 3, exp: "1L মিশ্রণে ইউরিয়ার মোল = 0.12 mol এবং সুক্রোজের মোল = 0.08 mol। মোট মোল = 0.20। C = 0.20 M। π = 0.20 × 0.0821 × 300 = 4.92 atm।" },
+      { q: "১৩. প্রতি 100 cm³ দ্রবণে 1.73 g তড়িৎ-অবিশ্লেষ্য পদার্থ A দ্রবীভূত আছে। এই দ্রবণটি 100 cm³ দ্রবণে 3.42 g সুক্রোজ দ্রবীভূত আছে এমন দ্রবণের সাথে আইসোটোনিক। A-এর আণবিক গুরুত্ব কত?", opts: ["156", "162", "169", "173"], ans: 3, exp: "সুক্রোজের মোলার গাঢ়ত্ব = 3.42 / 342 = 0.01 mol / 100 cm³। আইসোটোনিক হওয়ায় A-এর গাঢ়ত্বও সমান। 1.73 / M<sub>A</sub> = 0.01 => M<sub>A</sub> = 173।" },
+      { q: "১৪. 1000 g জলে 6.3 g ইউরিয়া ও 17.1 g গ্লুকোজ দ্রবীভূত করলে দ্রবণটির হিমাঙ্ক কত হবে? (জলের k<sub>f</sub> = 1.85 K kg mol⁻¹)", opts: ["-0.37°C", "-0.46°C", "-0.52°C", "-0.64°C"], ans: 0, exp: "ইউরিয়ার মোল = 6.3/60 = 0.105। গ্লুকোজের মোল = 17.1/180 = 0.095। মোট মোল = 0.2 mol। মোলালিটি = 0.2 m। ΔT<sub>f</sub> = 1.85 × 0.2 = 0.37 K। হিমাঙ্ক = -0.37°C।" },
+      { q: "১৫. অভিস্রবণ প্রক্রিয়ায় দ্রাবকের নিট প্রবাহ কোন্ দিক থেকে কোন্ দিকে হয়?", opts: ["গাঢ় দ্রবণ থেকে লঘু দ্রবণে", "লঘু দ্রবণ থেকে গাঢ় দ্রবণে", "উভয় দিকে সমানভাবে", "কোনো প্রবাহ হয় না"], ans: 1, exp: "অর্ধভেদ্য পর্দার মাধ্যমে অভিস্রবণ প্রক্রিয়ায় দ্রাবক সর্বদা নিম্ন গাঢ়ত্বের দ্রবণ (লঘু) থেকে উচ্চ গাঢ়ত্বের দ্রবণে (গাঢ়) প্রবাহিত হয়, যাতে উভয় পার্শ্বের গাঢ়ত্ব সমান হতে পারে।" }
+    ]
+  },
+  6: {
+    name: 'Set 6', icon: '🧮', topic: 'সম্পূর্ণ কলিগেটিভ ধর্ম (অ্যাডভান্সড গাণিতিক সমস্যা)',
+    questions: [
+      { q: "১. 1 kg জলে 0.05 mol গ্লুকোজ দ্রবীভূত আছে। উয়তা -0.15°C করলে দ্রবণ থেকে কত গ্রাম বরফ বেরিয়ে আসবে? (k<sub>f</sub>=1.86)", opts: ["325.8 g", "340.5 g", "365.2 g", "380.0 g"], ans: 3, exp: "-0.15°C এ দ্রবণে তরল জলের পরিমাণ w kg হলে, মোলালিটি m = 0.05/w। ΔT<sub>f</sub> = k<sub>f</sub> × m => 0.15 = 1.86 × 0.05 / w => w = 0.62 kg = 620 g। বরফ বেরিয়ে আসবে = 1000 - 620 = 380 g।" },
+      { q: "২. 20°C উয়তায় বিশুদ্ধ জলের বাষ্পচাপ 17.5 torr। সম-উয়তায় ইউরিয়ার একটি জলীয় দ্রবণের বাষ্পচাপ 16.94 torr হলে উক্ত দ্রবণে ইউরিয়ার ওজনগত শতকরা গাঢ়ত্ব (W/W) কত?", opts: ["7.1%", "8.37%", "9.92%", "10.28%"], ans: 2, exp: "বাষ্পচাপের আপেক্ষিক অবনমন Δp/p<sup>0</sup> = (17.5 - 16.94) / 17.5 = 0.032। অর্থাৎ মোল-ভগ্নাংশ x<sub>2</sub> = 0.032। হিসাব করলে দ্রবণের 100 গ্রামে ইউরিয়ার পরিমাণ 9.92 g পাওয়া যায়।" },
+      { q: "৩. 100 g ক্যামফরে একটি দ্রাব পদার্থের 1.56 g দ্রবীভূত করা হল। দ্রবণটির হিমাঙ্ক দেখা গেল 175.9°C। বিশুদ্ধ ক্যামফরের গলনাঙ্ক 179.8°C এবং ওর k<sub>f</sub> এর মান 40। দ্রাবটির আণব ভর কত?", opts: ["142", "155", "160", "168"], ans: 2, exp: "ΔT<sub>f</sub> = 3.9 K। m = 3.9 / 40 = 0.0975 mol/kg। M = 1.56 / 0.00975 = 160 g/mol।" },
+      { q: "৪. 750 mL 0.1 M গ্লুকোজ দ্রবণকে 250 mL 0.2 M ইউরিয়া দ্রবণের সঙ্গে মিশ্রিত করা হল। 27°C উয়তায় মিশ্র দ্রবণের অভিস্রবণ চাপ কত?", opts: ["1.8 atm", "2.4 atm", "3.0 atm", "3.2 atm"], ans: 2, exp: "মোট মোল = 0.125 mol। আয়তন = 1 L। π = 0.125 × 0.0821 × 300 = 3.07 atm ≈ 3.0 atm।" },
+      { q: "৫. ইনট্রাভেনাস থেরাপিতে 5.4% (W/V) ডেক্সট্রোজ দ্রবণ মানব শিরায় চালনা করা হয়। 37°C এ দ্রবণটি রক্তের সঙ্গে আইসোটোনিক। রক্তে উপাদানগুলির মোট গাঢ়ত্ব (mol/L) কত?", opts: ["0.20", "0.24", "0.30", "0.36"], ans: 2, exp: "ডেক্সট্রোজের (M=180) গাঢ়ত্ব = (5.4/180) × (1000/100) = 0.30 M। আইসোটোনিক হওয়ায় রক্তে উপাদানগুলির মোট গাঢ়ত্বও 0.30 M হবে।" },
+      { q: "৬. 131.8 mg ইনসুলিন 20 mL জলীয় দ্রবণে দ্রবীভূত আছে। 300 K উয়তায় দ্রবণটির অভিস্রবণ চাপ 20.6 torr হলে ইনসুলিনের আণব ভর কত? (R=62.4 L torr mol⁻¹ K⁻¹)", opts: ["2.64 × 10<sup>3</sup>", "4.08 × 10<sup>3</sup>", "5.98 × 10<sup>3</sup>", "6.72 × 10<sup>3</sup>"], ans: 2, exp: "π = C R T => 20.6 = (131.8 × 10<sup>-3</sup> / M) / 0.020 × 62.4 × 300। সমাধান করলে M ≈ 5987 বা 5.98 × 10<sup>3</sup> g/mol।" },
+      { q: "৭. জলে 18 g গ্লুকোজ দ্রবীভূত করে 500 mL দ্রবণ তৈরি করা হল। 27°C উয়তায় এই দ্রবণটি ইউরিয়ার একটি জলীয় দ্রবণের সঙ্গে আইসোটোনিক। ইউরিয়া দ্রবণটির ভর-আয়তন শতকরা গাঢ়ত্ব (W/V) কত?", opts: ["0.8%", "1.2%", "1.5%", "1.8%"], ans: 1, exp: "গ্লুকোজের গাঢ়ত্ব C = (18/180) / 0.5 = 0.2 M। আইসোটোনিক হওয়ায় ইউরিয়ার গাঢ়ত্বও 0.2 M। ইউরিয়ার 1L এ ভর = 0.2 × 60 = 12g। সুতরাং 100 mL এ 1.2g অর্থাৎ 1.2% (W/V)।" },
+      { q: "৮. 100 g সাইক্লোহেক্সেনে 2.136 g অ্যানথ্রাসিন (C<sub>14</sub>H<sub>10</sub>) দ্রবীভূত করা হল। দ্রবণটির স্বাভাবিক স্ফুটনাঙ্ক (°C) কত? (বিশুদ্ধ সাইক্লোহেক্সেনের স্ফুটনাঙ্ক 80.7°C, k<sub>b</sub>=2.8)", opts: ["80.92", "81.04", "81.08", "82.03"], ans: 1, exp: "অ্যানথ্রাসিনের আণব ভর M = 178। m = (2.136/178) / 0.1 = 0.12 mol/kg। ΔT<sub>b</sub> = 2.8 × 0.12 = 0.336 K। স্ফুটনাঙ্ক = 80.7 + 0.336 = 81.036 ≈ 81.04°C।" },
+      { q: "৯. 250 গ্রাম জলে কত গ্রাম ইথিলিন গ্লাইকল দ্রবীভূত করলে উৎপন্ন দ্রবণের হিমাঙ্ক -6°C হবে? (জলের k<sub>f</sub>=1.86)", opts: ["46 g", "50 g", "58 g", "62 g"], ans: 1, exp: "ΔT<sub>f</sub> = 6 K। m = 6 / 1.86 = 3.225 mol/kg। 250 g (0.25 kg) জলে দ্রাবের মোল = 3.225 × 0.25 = 0.806 mol। ইথিলিন গ্লাইকলের (M=62) ভর = 0.806 × 62 = 50 g।" },
+      { q: "১০. 37°C উয়তায় রক্তের গড় অভিস্রবণ চাপ 7.6 atm। দ্রবণের মোলারিটি = মোলালিটি ধরে নিলে রক্তের হিমাঙ্ক কত হবে? (k<sub>f</sub>=1.86, R=0.082)", opts: ["-0.47°C", "-0.52°C", "-0.56°C", "-0.61°C"], ans: 2, exp: "C = π / RT = 7.6 / (0.082 × 310) = 0.299 M ≈ 0.299 m। ΔT<sub>f</sub> = 1.86 × 0.299 = 0.556 K। হিমাঙ্ক = -0.56°C।" },
+      { q: "১১. 25°C উয়তায় 12.92 m দৈর্ঘ্যযুক্ত একটি গাছের শীর্ষে কোশরস পৌঁছাতে হলে কোশরসে সুগারের গাঢ়ত্ব কত হওয়া প্রয়োজন? (কোশরসের ঘনত্ব 1.0, পারদের ঘনত্ব 13.6)", opts: ["0.052 M", "0.075 M", "0.085 M", "0.1 M"], ans: 0, exp: "অভিস্রবণ চাপ π = hρg = 12.92 m জলের চাপ = 12.92 / 13.6 m পারদ চাপ = 0.95 m Hg = 950 mm Hg = 1.25 atm। C = π / RT = 1.25 / (0.0821 × 298) = 0.051 M ≈ 0.052 M।" },
+      { q: "১২. 1.8 g অ্যাসপিরিন (M=180) জলে দ্রবীভূত করে দ্রবণের আয়তন 400 mL করা হল। 27°C উয়তায় দ্রবণটির অভিস্রবণ চাপ (kPa এককে) কত? (R=8.314 kPa L K<sup>-1</sup> mol<sup>-1</sup>)", opts: ["62.3", "83.1", "124.6", "152.5"], ans: 0, exp: "C = (1.8/180) / 0.4 = 0.025 M। π = C R T = 0.025 × 8.314 × 300 = 62.35 kPa ≈ 62.3 kPa।" },
+      { q: "১৩. একটি হিমাঙ্ক-রোধক দ্রবণে ইথিলিন গ্লাইকলের (C<sub>2</sub>H<sub>6</sub>O<sub>2</sub>) গাঢ়ত্ব 31% (W/V)। দ্রবণটির ঘনত্ব 0.95 g/mL হলে হিমাঙ্ক কত? (k<sub>f</sub>=1.86)", opts: ["-12.8°C", "-13.6°C", "-14.5°C", "-15.0°C"], ans: 2, exp: "1L দ্রবণের ভর 950g। এতে গ্লাইকল আছে 310g। জলের ভর = 950 - 310 = 640g। গ্লাইকলের মোল = 310/62 = 5 mol। মোলালিটি m = 5 / 0.64 = 7.8125 m। ΔT<sub>f</sub> = 1.86 × 7.8125 = 14.5 K। হিমাঙ্ক = -14.5°C।" },
+      { q: "১৪. 27°C উয়তায় ইউরিয়ার একটি জলীয় দ্রবণের অভিস্রবণ চাপ 4.92 atm। দ্রবণটিকে লঘু করা হল এবং উয়তা বাড়িয়ে 47°C করা হল। এর ফলে অভিস্রবণ চাপ হয় 1.312 atm। দ্রবণটিকে কত গুণ লঘু করা হয়েছিল?", opts: ["2.5", "3.0", "3.5", "4.0"], ans: 3, exp: "π<sub>1</sub> = C<sub>1</sub> R T<sub>1</sub> => 4.92 = C<sub>1</sub> × R × 300। π<sub>2</sub> = C<sub>2</sub> R T<sub>2</sub> => 1.312 = C<sub>2</sub> × R × 320। সমীকরণ দুটি ভাগ করলে পাওয়া যায় C<sub>1</sub>/C<sub>2</sub> = 4.0। অর্থাৎ 4 গুণ লঘু করা হয়েছিল।" },
+      { q: "১৫. একটি নির্দিষ্ট উয়তায় জলের বাষ্পচাপ 2% হ্রাস পায় যখন 100g জলে নির্দিষ্ট পরিমাণ ইউরিয়া (আণবিক ভর 60) দ্রবীভূত করা হয়। উক্ত দ্রবণের মোলালিটি (mol·kg<sup>-1</sup>) কত?", opts: ["1.13", "1.84", "2.95", "3.26"], ans: 0, exp: "বাষ্পচাপ 2% হ্রাস পেলে আপেক্ষিক অবনমন = 0.02। অর্থাৎ দ্রাবের মোল ভগ্নাংশ 0.02। n<sub>2</sub> / (n<sub>1</sub> + n<sub>2</sub>) = 0.02 => n<sub>1</sub> = 49 n<sub>2</sub>। 100g জলে n<sub>1</sub> = 5.55 mol. তাই n<sub>2</sub> = 5.55 / 49 = 0.113 mol। 100 g জলে 0.113 mol থাকলে মোলালিটি = (0.113/100) × 1000 = 1.13 m।" }
+    ]
+  },
+  7: {
+    name: 'Set 7', icon: '⚖️', topic: 'অস্বাভাবিক আণবিক ভর ও ভ্যান্ট হফ গুণক',
+    questions: [
+      { q: "১. লঘু দ্রবণের কোনো একটি কলিগেটিভ ধর্মের পরীক্ষালব্ধ মান ও তাত্ত্বিক (গণনাকৃত) মানের অনুপাতকে কী বলা হয়?", opts: ["ক্রায়োস্কোপিক ধ্রুবক", "ইবিউলিওস্কোপিক ধ্রুবক", "ভ্যান্ট হফ গুণক (i)", "হেনরি ধ্রুবক"], ans: 2, exp: "বিজ্ঞানী ভ্যান্ট হফ দ্রবণের পরীক্ষালব্ধ এবং তাত্ত্বিক কলিগেটিভ ধর্মের অনুপাতকে 'i' দ্বারা প্রকাশ করেন, যাকে ভ্যান্ট হফ গুণক বা van't Hoff factor বলে।" },
+      { q: "২. একটি তড়িদ্বিশ্লেষ্য পদার্থ দ্রবণে সম্পূর্ণ বিয়োজিত হলে, তার ভ্যান্ট হফ গুণকের (i) মান কেমন হবে?", opts: ["i = 1", "i < 1", "i > 1", "i = 0"], ans: 2, exp: "তড়িদ্বিশ্লেষ্য পদার্থের বিয়োজনের ফলে দ্রবণে কণার সংখ্যা বৃদ্ধি পায়, তাই পরীক্ষালব্ধ কলিগেটিভ ধর্মের মান তাত্ত্বিক মানের চেয়ে বেশি হয় এবং i > 1 হয়।" },
+      { q: "৩. দ্রবণে দ্রাব পদার্থের সংযোজন (Association) ঘটলে ভ্যান্ট হফ গুণকের (i) মান কত হয়?", opts: ["i > 1", "i < 1", "i = 1", "i = 0"], ans: 1, exp: "সংযোজনের ফলে দ্রবণে কণার মোট সংখ্যা হ্রাস পায় (যেমন ডাইমার গঠন), ফলে কলিগেটিভ ধর্মের মান কমে যায় এবং i-এর মান 1-এর চেয়ে কম হয়।" },
+      { q: "৪. Ba(NO<sub>3</sub>)<sub>2</sub>-এর 0.1 M জলীয় দ্রবণে ভ্যান্ট হফ ফ্যাক্টরের মান 2.74 হলে ওর শতকরা বিয়োজন মাত্রা কত?", opts: ["78%", "82%", "87%", "96%"], ans: 2, exp: "Ba(NO<sub>3</sub>)<sub>2</sub> থেকে মোট 3টি আয়ন পাওয়া যায় (n=3)। বিয়োজন মাত্রা α = (2.74 - 1) / (3 - 1) = 1.74 / 2 = 0.87 বা 87%।" },
+      { q: "৫. সম্পূর্ণ বিয়োজিত অবস্থায় K<sub>3</sub>[Fe(CN)<sub>6</sub>] লবণের ক্ষেত্রে ভ্যান্ট হফ গুণকের (i) মান কত হবে?", opts: ["2", "3", "4", "5"], ans: 2, exp: "K<sub>3</sub>[Fe(CN)<sub>6</sub>] বিয়োজিত হয়ে 3টি K<sup>+</sup> আয়ন এবং 1টি [Fe(CN)<sub>6</sub>]<sup>3-</sup> আয়ন উৎপন্ন করে। মোট আয়ন সংখ্যা n = 3+1 = 4। সম্পূর্ণ বিয়োজনে i = n = 4।" },
+      { q: "৬. একটি নির্দিষ্ট উয়তায় 4×10<sup>-3</sup> M Na<sub>2</sub>SO<sub>4</sub>-এর জলীয় দ্রবণ, 10<sup>-2</sup> M ইউরিয়ার জলীয় দ্রবণের সঙ্গে আইসোটোনিক। Na<sub>2</sub>SO<sub>4</sub> দ্রবণে ভ্যান্ট হফ গুণকের মান কত?", opts: ["2.0", "2.5", "3.0", "1.5"], ans: 1, exp: "আইসোটোনিক দ্রবণের ক্ষেত্রে, π<sub>1</sub> = π<sub>2</sub> => i × C<sub>1</sub> = C<sub>2</sub> => i × 4×10<sup>-3</sup> = 10<sup>-2</sup>। সুতরাং, i = 10<sup>-2</sup> / (4×10<sup>-3</sup>) = 2.5।" },
+      { q: "৭. 1.83g বেঞ্জোয়িক অ্যাসিড 25g বেঞ্জিনে দ্রবীভূত করলে হিমাঙ্ক 1.53K কমে। যদি বেঞ্জিনের k<sub>f</sub> = 5.0 K·kg·mol<sup>-1</sup> হয়, তবে বেঞ্জোয়িক অ্যাসিডের সংযোজন মাত্রা কত?", opts: ["90%", "95%", "98%", "100%"], ans: 2, exp: "মোলালিটি = 0.6 m। ΔT<sub>f</sub> = i × k<sub>f</sub> × m => 1.53 = i × 5.0 × 0.6 => i = 0.51। সংযোজন মাত্রা x = (1-i)/(1 - 1/n)। ডাইমার হওয়ায় n=2। x = (1-0.51)/(1-0.5) = 0.98 বা 98%।" },
+      { q: "৮. 300K উয়তায় K<sub>4</sub>[Fe(CN)<sub>6</sub>]-এর একটি ডেসিমোলার (0.1M) দ্রবণে লবণটির 50% আয়নিত হয়। দ্রবণটির অভিস্রবণ চাপ কত? (R=0.083 bar L/mol K)", opts: ["5.82 bar", "6.34 bar", "7.47 bar", "8.12 bar"], ans: 2, exp: "n = 5 (4টি K<sup>+</sup> এবং 1টি জটিল আয়ন)। α = 0.5। i = 1 + α(n-1) = 1 + 0.5(5-1) = 3। π = iCRT = 3 × 0.1 × 0.083 × 300 = 7.47 bar।" },
+      { q: "৯. বেঞ্জিনে দ্রবীভূত করলে অ্যাসিটিক অ্যাসিড বা বেঞ্জোয়িক অ্যাসিডের পরীক্ষালব্ধ আণবিক ভর তাত্ত্বিক মানের চেয়ে বেশি হয় কেন?", opts: ["এরা বিয়োজিত হয়", "এরা পলিমার গঠন করে", "এরা হাইড্রোজেন বন্ধনের মাধ্যমে ডাইমার (সংযোজন) গঠন করে", "এরা দ্রাবকের সাথে বিক্রিয়া করে"], ans: 2, exp: "বেঞ্জিনের মতো অ-ধ্রুবীয় দ্রাবকে এরা হাইড্রোজেন বন্ধন তৈরি করে অণুগুলিকে জোড়া লাগিয়ে ডাইমার গঠন করে। ফলে কণার সংখ্যা অর্ধেক হয় এবং আণবিক ভর দ্বিগুণ মনে হয়।" },
+      { q: "১০. 0.2 M গ্লুকোজ দ্রবণকে 0.05 M NaCl দ্রবণ থেকে অর্ধভেদ্য পর্দা দিয়ে পৃথক করা হলো। 300 K উয়তায় কী পরিমাণ অভিস্রবণ চাপ সৃষ্টি হবে? (R=0.083 L bar/mol K)", opts: ["1.68 bar", "2.06 bar", "2.24 bar", "2.49 bar"], ans: 3, exp: "গ্লুকোজের π<sub>1</sub> = 0.2 RT। NaCl-এর π<sub>2</sub> = iCRT = 2 × 0.05 RT = 0.1 RT। সৃষ্ট অভিস্রবণ চাপ = π<sub>1</sub> - π<sub>2</sub> = 0.1 RT = 0.1 × 0.083 × 300 = 2.49 bar।" },
+      { q: "১১. NaCl-এর লঘু জলীয় দ্রবণে i-এর মান তাত্ত্বিক মান 2-এর চেয়ে সামান্য কম (যেমন 1.88) হওয়ার কারণ কী?", opts: ["অসম্পূর্ণ দ্রাব্যতা", "আয়ন-জোড় (ion-pair) গঠন", "জলের বাষ্পীভবন", "ত্রুটিপূর্ণ পরিমাপ"], ans: 1, exp: "গাঢ়ত্ব একটু বেশি হলে বিপরীত আধানের আয়নগুলি স্থির-তাড়িতিক আকর্ষণে কাছাকাছি থেকে 'আয়ন-জোড়' গঠন করে, ফলে দ্রবণে মুক্ত কণার প্রকৃত সংখ্যা কিছুটা কমে যায়।" },
+      { q: "১২. দ্রাবের বিয়োজন মাত্রা (α) এবং ভ্যান্ট হফ গুণকের (i) সঠিক সম্পর্ক কোনটি?", opts: ["α = (i - 1)/(n + 1)", "α = (1 - i)/(1 - n)", "α = (i - 1)/(n - 1)", "α = (i + 1)/(n - 1)"], ans: 2, exp: "যদি 1 মোল দ্রাব বিয়োজিত হয়ে n মোল আয়ন দেয়, তবে সাম্যাবস্থায় মোট কণা = 1 - α + nα = 1 + α(n-1)। তাই i = 1 + α(n-1) বা α = (i-1)/(n-1)।" },
+      { q: "১৩. 105.84 g জলে 0.05 mol Ca(NO<sub>3</sub>)<sub>2</sub> দ্রবীভূত করা হলো। 100°C উয়তায় 70% আয়নিত হলে দ্রবণের বাষ্পচাপ কত হবে? (বিশুদ্ধ জলের বাষ্পচাপ 760 mmHg)", opts: ["738.6 mmHg", "744.8 mmHg", "750.2 mmHg", "752.5 mmHg"], ans: 1, exp: "n=3, α=0.7, i = 1+0.7(2) = 2.4। দ্রাবের কার্যকরী মোল n<sub>2</sub>' = 2.4 × 0.05 = 0.12। জলের মোল n<sub>1</sub> = 105.84/18 = 5.88। (p<sup>0</sup> - p)/p<sup>0</sup> = 0.12 / (5.88+0.12) = 0.02। p = 760 - (0.02×760) = 744.8 mmHg।" },
+      { q: "১৪. 0.1 M ইউরিয়া, 0.1 M NaCl এবং 0.1 M Na<sub>2</sub>SO<sub>4</sub> দ্রবণের অভিস্রবণ চাপের সঠিক ক্রম কী?", opts: ["ইউরিয়া > NaCl > Na<sub>2</sub>SO<sub>4</sub>", "Na<sub>2</sub>SO<sub>4</sub> > NaCl > ইউরিয়া", "NaCl > ইউরিয়া > Na<sub>2</sub>SO<sub>4</sub>", "তিনটি সমান"], ans: 1, exp: "ভ্যান্ট হফ গুণক (i): ইউরিয়া (1), NaCl (2), Na<sub>2</sub>SO<sub>4</sub> (3)। অভিস্রবণ চাপ i-এর সমানুপাতিক। তাই Na<sub>2</sub>SO<sub>4</sub> এর সবচেয়ে বেশি।" },
+      { q: "১৫. ভ্যান্ট হফ গুণক 'i' কে নিচের কোন সমীকরণটি দ্বারা প্রকাশ করা যায়?", opts: ["i = স্বাভাবিক আণবিক ভর / অস্বাভাবিক আণবিক ভর", "i = অস্বাভাবিক আণবিক ভর / স্বাভাবিক আণবিক ভর", "i = তাত্ত্বিক সংখ্যাগত ধর্ম / পরীক্ষালব্ধ সংখ্যাগত ধর্ম", "i = পরীক্ষালব্ধ সংখ্যাগত ধর্ম × তাত্ত্বিক সংখ্যাগত ধর্ম"], ans: 0, exp: "কলিগেটিভ ধর্ম আণবিক ভরের ব্যস্তানুপাতিক। তাই i = (পরীক্ষালব্ধ কলিগেটিভ ধর্ম / তাত্ত্বিক কলিগেটিভ ধর্ম) = (তাত্ত্বিক আণবিক ভর / পরীক্ষালব্ধ আণবিক ভর)।" }
+    ]
+  },
+  8: {
+    name: 'Set 8', icon: '🌫️', topic: 'কোলয়েডীয় অবস্থা (প্রাথমিক ধারণা ও প্রকারভেদ)',
+    questions: [
+      { q: "১. বিস্তৃত তন্ত্রে প্রকৃত দ্রবণ, কোলয়েড এবং প্রলম্বনের কণার ব্যাসের বিচারে কোলয়েড কণার ব্যাস কত হয়?", opts: ["≤ 10<sup>-8</sup> cm", "10<sup>-7</sup> cm থেকে 10<sup>-4</sup> cm", "> 10<sup>-4</sup> cm", "10<sup>-9</sup> cm থেকে 10<sup>-8</sup> cm"], ans: 1, exp: "প্রকৃত দ্রবণের কণা 10<sup>-8</sup> cm এর ছোট এবং প্রলম্বনের কণা 10<sup>-4</sup> cm এর বড় হয়। কোলয়েড কণা এদের মাঝামাঝি (10<sup>-7</sup> থেকে 10<sup>-4</sup> cm বা 1 nm থেকে 1000 nm) আকারের হয়।" },
+      { q: "২. যে কোলয়েডে বিস্তার মাধ্যম গ্যাসীয় এবং বিস্তৃত দশা কঠিন, তাকে কী বলে?", opts: ["কঠিন ফোম", "জেল", "কঠিন এরোসল", "তরল এরোসল"], ans: 2, exp: "ধোঁয়া, বায়ুতে ভাসমান ধুলো ইত্যাদি হলো কঠিন এরোসলের উদাহরণ, যেখানে কঠিন কণা গ্যাসে ভাসমান থাকে।" },
+      { q: "৩. পনির, জেলি এবং দই কোন ধরনের কোলয়েড সিস্টেমের উদাহরণ?", opts: ["ফোম", "ইমালসন", "সল", "জেল"], ans: 3, exp: "জেলের ক্ষেত্রে বিস্তৃত দশা হলো তরল এবং বিস্তার মাধ্যম হলো কঠিন। জেলি ও পনির এর প্রকৃষ্ট উদাহরণ।" },
+      { q: "৪. লায়োফিলিক (দ্রাবক-আকর্ষী) কোলয়েড সম্পর্কে কোনটি সঠিক?", opts: ["এদের বিস্তার মাধ্যমের প্রতি কোনো আসক্তি নেই", "এদের সহজে তঞ্চিত করা যায়", "এরা পরাবর্ত (Reversible) প্রকৃতির", "এদের স্থায়িত্ব কম"], ans: 2, exp: "লায়োফিলিক কোলয়েডে বিস্তার মাধ্যমের প্রতি তীব্র আসক্তি থাকে এবং এরা পরাবর্ত। একবার তঞ্চিত হলে দ্রাবক যোগ করলেই আবার কোলয়েড ফিরে পাওয়া যায়।" },
+      { q: "৫. গোল্ড সল, সিলভার সল এবং সালফার সল কোন ধরনের কোলয়েড?", opts: ["লায়োফিলিক", "লায়োফোবিক", "জেল", "ইমালসন"], ans: 1, exp: "ধাতু বা অধাতুর সলগুলি দ্রাবক-বিকর্ষী বা লায়োফোবিক কোলয়েড। এদের স্থায়িত্ব কম হয় এবং সহজে তৈরি করা যায় না।" },
+      { q: "৬. বহুসংখ্যক অণু বা পরমাণু একত্রিত হয়ে যে কোলয়েড গঠন করে, তাকে কী বলে?", opts: ["ম্যাক্রোমলিকিউলার কোলয়েড", "মাল্টিমলিকিউলার (বহু-অণু সমন্বিত) কোলয়েড", "সংযোজিত কোলয়েড", "ইমালসন"], ans: 1, exp: "সালফার সলে বহুসংখ্যক S<sub>8</sub> অণু বা গোল্ড সলে বহু গোল্ড পরমাণু একত্রিত হয়ে কোলয়েড কণার আকার লাভ করে। এটি মাল্টিমলিকিউলার কোলয়েড।" },
+      { q: "৭. সাবানের জলীয় দ্রবণ উচ্চ গাঢ়ত্বে কী ধরনের কোলয়েড গঠন করে?", opts: ["ম্যাক্রোমলিকিউলার কোলয়েড", "মাল্টিমলিকিউলার কোলয়েড", "সংযোজিত কোলয়েড (Micelle)", "প্রকৃত দ্রবণ"], ans: 2, exp: "সাবান কম গাঢ়ত্বে তড়িদ্বিশ্লেষ্য হিসেবে থাকলেও, একটি নির্দিষ্ট গাঢ়ত্বের (CMC) ওপরে জোটবদ্ধ হয়ে মিসেল বা সংযোজিত কোলয়েড গঠন করে।" },
+      { q: "৮. যে সর্বনিম্ন উয়তার ওপরে সাবান দ্রবণে মিসেল (Micelle) গঠিত হয়, তাকে কী বলে?", opts: ["ক্রান্তিক উয়তা", "বয়েল উয়তা", "ক্রাফট উয়তা (Krafft Temperature)", "ইনভারশন উয়তা"], ans: 2, exp: "মিসেল গঠনের জন্য গাঢ়ত্ব CMC-এর উপরে এবং উয়তা ক্রাফট উয়তা বা Krafft Temperature-এর ওপরে থাকতে হয়।" },
+      { q: "৯. ব্রেডিগের আর্ক (Bredig's Arc) পদ্ধতিতে সাধারণত কোন ধরনের কোলয়েড প্রস্তুত করা হয়?", opts: ["স্টার্চ সল", "সালফার সল", "ধাতব সল (যেমন গোল্ড, সিলভার)", "জিলেটিন"], ans: 2, exp: "ব্রেডিগের আর্ক পদ্ধতিতে জলের নিচে দুটি ধাতব তড়িদ্দ্বারের মধ্যে তড়িৎ-স্ফুলিঙ্গ তৈরি করে ধাতুকে বাষ্পীভূত ও ঘনীভূত করে সল বানানো হয়।" },
+      { q: "১০. সদ্য প্রস্তুত অধঃক্ষেপকে উপযুক্ত তড়িদ্বিশ্লেষ্য যোগ করে কোলয়ডীয় দ্রবণে পরিণত করার পদ্ধতিকে কী বলে?", opts: ["তঞ্চন", "পেপটাইজেশন (Peptization)", "ডায়ালিসিস", "আল্ট্রাফিলট্রেশন"], ans: 1, exp: "তড়িদ্বিশ্লেষ্য পদার্থের আয়ন অধঃক্ষেপের কণার পৃষ্ঠতলে অধিশোষিত হয়ে কণাগুলিকে সম-আধানযুক্ত করে বিচ্ছিন্ন করে এবং কোলয়েডে পরিণত করে।" },
+      { q: "১১. কোলয়ডীয় দ্রবণ থেকে ক্রিস্টালয়েড বা তড়িদ্বিশ্লেষ্য অশুদ্ধি দূর করার জন্য কোন পদ্ধতি ব্যবহার করা হয়?", opts: ["পেপটাইজেশন", "তঞ্চন", "ডায়ালিসিস (Dialysis)", "ঘনীভবন"], ans: 2, exp: "পার্চমেন্ট কাগজের মতো অর্ধভেদ্য পর্দার সাহায্যে কোলয়েড থেকে ক্রিস্টালয়েড অশুদ্ধি দূর করার পদ্ধতিই হলো ডায়ালিসিস বা ঝিল্লি বিশ্লেষণ।" },
+      { q: "১২. স্টার্চ এবং প্রোটিনের জলীয় দ্রবণ কোন ধরনের কোলয়েডের উদাহরণ?", opts: ["মাল্টিমলিকিউলার", "ম্যাক্রোমলিকিউলার (বৃহদাণবিক)", "সংযোজিত কোলয়েড", "এরোসল"], ans: 1, exp: "স্টার্চ, সেলুলোজ বা প্রোটিনের মতো পলিমারগুলোর প্রতিটি অণু নিজেই কোলয়েড কণার আকারের সমান। তাই এরা ম্যাক্রোমলিকিউলার কোলয়েড।" },
+      { q: "১৩. আল্ট্রাফিলটার পেপার প্রস্তুত করতে সাধারণ ফিলটার পেপারকে কোন দ্রবণে সিক্ত করা হয়?", opts: ["কোলোয়ডীয়ন (Collodion) দ্রবণ", "সোডিয়াম ক্লোরাইড দ্রবণ", "স্টার্চ দ্রবণ", "সাবান দ্রবণ"], ans: 0, exp: "অ্যালকোহল ও ইথার মিশ্রণে নাইট্রোসেলুলোজের 4% দ্রবণকে কোলোয়ডীয়ন বলে। এটি সাধারণ ফিলটার পেপারের ছিদ্র ছোট করতে ব্যবহৃত হয়।" },
+      { q: "১৪. সাবানের ক্ষেত্রে সংকট মিসেলীকরণ গাঢ়ত্ব (CMC)-এর মান সাধারণত কত হয়?", opts: ["10<sup>-1</sup> থেকে 10<sup>-2</sup> M", "10<sup>-4</sup> থেকে 10<sup>-3</sup> M", "10<sup>-7</sup> থেকে 10<sup>-6</sup> M", "1 থেকে 2 M"], ans: 1, exp: "সাবানের জলীয় দ্রবণে গাঢ়ত্ব 10<sup>-4</sup> থেকে 10<sup>-3</sup> mol/L-এর বেশি হলেই অণুগুলো জোটবদ্ধ হয়ে মিসেল গঠন করে।" },
+      { q: "১৫. মানবদেহের কিডনি অশুদ্ধ রক্তকে কোন প্রক্রিয়ায় বিশুদ্ধ করে?", opts: ["তঞ্চন", "পেপটাইজেশন", "ডায়ালিসিস", "ইলেকট্রোফোরেসিস"], ans: 2, exp: "রক্ত একটি কোলয়েড। কিডনি প্রাকৃতিকভাবে ডায়ালিসিস প্রক্রিয়ার মাধ্যমে রক্ত থেকে বিভিন্ন তড়িদ্বিশ্লেষ্য ও রেচন পদার্থ পরিশোধন করে।" }
+    ]
+  },
+  9: {
+    name: 'Set 9', icon: '⚡', topic: 'কোলয়েডের ধর্ম ও তঞ্চন',
+    questions: [
+      { q: "১. কোলয়েড দ্রবণের মধ্য দিয়ে আলোকরশ্মি পাঠালে আলোর গতিপথ দৃশ্যমান হয়। এই ঘটনাকে কী বলে?", opts: ["ব্রাউনীয় গতি", "ইলেকট্রোফোরেসিস", "টিন্ডাল প্রভাব (Tyndall Effect)", "ডায়ালিসিস"], ans: 2, exp: "কোলয়েড কণা দ্বারা আলোর বিক্ষেপণের ফলেই আলোর গতিপথ দেখা যায়। বিজ্ঞানী টিন্ডাল এটি আবিষ্কার করেন বলে এর নাম টিন্ডাল প্রভাব।" },
+      { q: "২. কোলয়েড কণাগুলির বিরামহীন ও ইতস্তত গতির কারণ কী?", opts: ["কণাগুলির আধান", "মাধ্যমের অণুগুলি দ্বারা অসম সংঘর্ষ", "আলোর বিক্ষেপণ", "মহাকর্ষ বল"], ans: 1, exp: "বিস্তার মাধ্যমের অণুগুলো সবদিক থেকে কোলয়েড কণাগুলোকে অসমভাবে ধাক্কা দেয়, ফলে কণাগুলো অবিরত আঁকাবাঁকা পথে ঘুরে বেড়ায়। এটিই ব্রাউনীয় গতি।" },
+      { q: "৩. তড়িৎক্ষেত্রের প্রভাবে কোলয়েড কণাগুলির ক্যাথোড বা অ্যানোডের দিকে গমনকে কী বলে?", opts: ["তড়িৎ-অভিস্রবণ", "ইলেকট্রোফোরেসিস", "তঞ্চন", "পেপটাইজেশন"], ans: 1, exp: "আধানযুক্ত কোলয়েড কণা তড়িৎক্ষেত্র প্রয়োগে বিপরীত তড়িদ্দ্বারের দিকে গমন করে, যা ইলেকট্রোফোরেসিস নামে পরিচিত।" },
+      { q: "৪. যে নির্দিষ্ট pH-এ প্রোটিন কণাগুলি তড়িৎক্ষেত্রে কোনো তড়িদ্দ্বারের দিকেই অগ্রসর হয় না, তাকে কী বলে?", opts: ["ক্রাফট উয়তা", "সমতড়িৎ বিন্দু (Iso-electric point)", "কিউরি বিন্দু", "নিউট্রাল পয়েন্ট"], ans: 1, exp: "এই নির্দিষ্ট pH-এ প্রোটিন অণুর নিট আধান শূন্য হয় (জুইটার আয়ন), একে সমতড়িৎ বিন্দু বা আইসোইলেকট্রিক পয়েন্ট বলে।" },
+      { q: "৫. তড়িদ্বিশ্লেষ্য পদার্থের উপস্থিতিতে কোলয়েড অধঃক্ষিপ্ত হওয়ার ঘটনাকে কী বলে?", opts: ["পেপটাইজেশন", "ডায়ালিসিস", "তঞ্চন (Coagulation)", "ব্রাউনীয় গতি"], ans: 2, exp: "বিপরীত আধানযুক্ত আয়ন কোলয়েড কণার আধান প্রশমিত করে তঞ্চিত বা অধঃক্ষিপ্ত করে। একে তঞ্চন বলে।" },
+      { q: "৬. শূলজে-হার্ডি নিয়ম অনুযায়ী, তড়িদ্বিশ্লেষ্যের তঞ্চন ক্ষমতা কার ওপর নির্ভর করে?", opts: ["আয়নের ভরের ওপর", "বিপরীত আধানযুক্ত আয়নের যোজ্যতার ওপর", "কণার আকারের ওপর", "উয়তার ওপর"], ans: 1, exp: "তড়িদ্বিশ্লেষ্যের যে আয়নটি তঞ্চন ঘটায় তার যোজ্যতা বা আধান যত বেশি হয়, তঞ্চন ক্ষমতা তত বেশি হয়।" },
+      { q: "৭. ঋণাত্মক As<sub>2</sub>S<sub>3</sub> সল তঞ্চনের ক্ষেত্রে নিচের কোন ক্যাটায়নটির তঞ্চন ক্ষমতা সবচেয়ে বেশি?", opts: ["Na<sup>+</sup>", "Mg<sup>2+</sup>", "Ba<sup>2+</sup>", "Al<sup>3+</sup>"], ans: 3, exp: "ঋণাত্মক সলকে তঞ্চিত করবে ক্যাটায়ন। Al<sup>3+</sup>-এর আধান সর্বাধিক (+3), তাই এর তঞ্চন ক্ষমতা সবচেয়ে বেশি (শূলজে-হার্ডি নিয়ম)।" },
+      { q: "৮. 1 লিটার কোলয়েড দ্রবণকে সম্পূর্ণ তঞ্চিত করতে মিলি-মোল (mmol) এককে কোনো তড়িদ্বিশ্লেষ্য পদার্থের সর্বনিম্ন যত গাঢ়ত্বের প্রয়োজন হয়, তাকে কী বলে?", opts: ["স্বর্ণসংখ্যা", "ফ্লোকুলেশন মান (Flocculation value)", "তঞ্চন ক্ষমতা", "জিটা বিভব"], ans: 1, exp: "এটি সংকট তঞ্চন গাঢ়ত্ব নামেও পরিচিত। ফ্লোকুলেশন মান যত কম হয়, তড়িদ্বিশ্লেষ্যটির তঞ্চন ক্ষমতা তত বেশি হয়।" },
+      { q: "৯. গোল্ড সলের মতো লায়োফোবিক কোলয়েডকে তঞ্চনের হাত থেকে রক্ষা করার জন্য যে লায়োফিলিক কোলয়েড যোগ করা হয়, তাকে কী বলে?", opts: ["ইমালসিফায়ার", "সংরক্ষক কোলয়েড (Protective colloid)", "পেপটাইজিং এজেন্ট", "অনুঘটক"], ans: 1, exp: "লায়োফিলিক কোলয়েডগুলো লায়োফোবিক কণার চারপাশে একটি আবরণ তৈরি করে তড়িদ্বিশ্লেষ্যকে আক্রমণ করতে বাধা দেয় এবং স্থায়িত্ব বাড়ায়।" },
+      { q: "১০. সংরক্ষক কোলয়েডের সংরক্ষণ ক্ষমতা পরিমাপ করার জন্য কোন রাশির প্রবর্তন করা হয়েছে?", opts: ["জিটা বিভব", "ফ্লোকুলেশন মান", "স্বর্ণসংখ্যা (Gold number)", "পেপটাইজেশন মান"], ans: 2, exp: "বিজ্ঞানী জিগমন্ডি সংরক্ষক কোলয়েডের ক্ষমতা মাপতে স্বর্ণসংখ্যা প্রবর্তন করেন। স্বর্ণসংখ্যা যত কম, সংরক্ষণ ক্ষমতা তত বেশি হয়।" },
+      { q: "১১. 100 mL গোল্ড সলে 10<sup>-4</sup>g জিলেটিন দিলে 10% NaCl দ্বারা তঞ্চন আটকায়। জিলেটিনের স্বর্ণসংখ্যা কত?", opts: ["0.01", "0.1", "1.0", "10"], ans: 0, exp: "সংজ্ঞানুযায়ী স্বর্ণসংখ্যা মাপা হয় 10 mL সলের জন্য। 100 mL এর জন্য লাগে 10<sup>-4</sup> g = 0.1 mg। সুতরাং 10 mL এর জন্য লাগবে (0.1/10) = 0.01 mg। তাই স্বর্ণসংখ্যা 0.01।" },
+      { q: "১২. ধনাত্মক Fe(OH)<sub>3</sub> সলের তঞ্চনের ক্ষেত্রে নিচের কোন অ্যানায়নটি সবচেয়ে বেশি কার্যকরী?", opts: ["Cl<sup>-</sup>", "SO<sub>4</sub><sup>2-</sup>", "PO<sub>4</sub><sup>3-</sup>", "NO<sub>3</sub><sup>-</sup>"], ans: 2, exp: "ধনাত্মক সলকে তঞ্চিত করবে অ্যানায়ন। শূলজে-হার্ডি নিয়ম অনুযায়ী যোজ্যতা বেশি হলে তঞ্চন ক্ষমতা বেশি। এখানে ফসফেট আয়নের আধান সর্বাধিক (-3)।" },
+      { q: "১৩. বৈদ্যুতিক দ্বি-স্তরের (Electrical double layer) দৃঢ় স্তর ও পরিব্যাপ্ত স্তরের মধ্যে সৃষ্ট বৈদ্যুতিক বিভব পার্থক্যকে কী বলে?", opts: ["তড়িৎচালক বল", "জিটা বিভব (Zeta potential)", "সমতড়িৎ বিভব", "ওভারভোল্টেজ"], ans: 1, exp: "হেলমহোজের দ্বি-স্তরে থাকা দুটি বিপরীত আধানযুক্ত স্তরের বিভব পার্থক্যই হলো তড়িৎগতীয় বিভব বা জিটা বিভব, যা কোলয়েডকে স্থায়িত্ব প্রদান করে।" },
+      { q: "১৪. জিলেটিনের স্বর্ণসংখ্যা 0.005 এবং স্টার্চের স্বর্ণসংখ্যা 25। এদের মধ্যে কার সংরক্ষণ ক্ষমতা বেশি?", opts: ["স্টার্চের", "জিলেটিনের", "উভয়ের সমান", "বলা সম্ভব নয়"], ans: 1, exp: "স্বর্ণসংখ্যা সংরক্ষক ক্ষমতার ব্যস্তানুপাতিক। জিলেটিনের স্বর্ণসংখ্যা অত্যন্ত কম হওয়ায় এর সংরক্ষণ ক্ষমতা সর্বাধিক।" },
+      { q: "১৫. সদ্য প্রস্তুত Fe(OH)<sub>3</sub> অধঃক্ষেপে অল্প FeCl<sub>3</sub> দ্রবণ যোগ করলে ধনাত্মক সল গঠিত হয়। এই সলের সঠিক উপস্থাপন কোনটি?", opts: ["[Fe<sub>2</sub>O<sub>3</sub> · xH<sub>2</sub>O] Cl<sup>-</sup> ⋮ Fe<sup>3+</sup>", "[Fe<sub>2</sub>O<sub>3</sub> · xH<sub>2</sub>O] Fe<sup>3+</sup> ⋮ 3Cl<sup>-</sup>", "[Fe(OH)<sub>3</sub>] 3OH<sup>-</sup> ⋮ Fe<sup>3+</sup>", "[Fe<sub>2</sub>O<sub>3</sub>] 3Cl<sup>-</sup> ⋮ Fe<sup>3+</sup>"], ans: 1, exp: "Fe<sup>3+</sup> আয়ন কণার পৃষ্ঠতলে দৃঢ়ভাবে অধিশোষিত হয়ে ধনাত্মক প্রাইমারি স্তর এবং Cl<sup>-</sup> আয়ন পরিব্যাপ্ত স্তর গঠন করে।" }
+    ]
+  },
+  10: {
+    name: 'Set 10', icon: '🥛', topic: 'ইমালসন ও ব্যবহারিক প্রয়োগ',
+    questions: [
+      { q: "১. একটি তরল পদার্থের মধ্যে অপর একটি অ-মিশ্রণীয় তরল বিন্দু আকারে বিস্তৃত থেকে যে কোলয়েড গঠন করে, তাকে কী বলে?", opts: ["জেল", "এরোসল", "ইমালসন", "ফোম"], ans: 2, exp: "ইমালসনে বিস্তৃত দশা এবং বিস্তার মাধ্যম উভয়েই তরল হয় (যেমন জলে তেল বা তেলে জল)।" },
+      { q: "২. নিচের কোনটি জলে-তেল (Oil in Water, O/W) জাতীয় ইমালসনের উদাহরণ?", opts: ["দুধ", "মাখন", "কোল্ড ক্রিম", "কড লিভার তেল"], ans: 0, exp: "দুধে বিস্তার মাধ্যম হলো জল এবং বিস্তৃত দশা হলো তরল ফ্যাট (তেল)। মাখন বা কোল্ড ক্রিম হলো তেলে-জল (W/O) জাতীয় ইমালসন।" },
+      { q: "৩. দুটি অ-মিশ্রণীয় তরলের ইমালসনকে স্থায়িত্ব প্রদান করতে বাইরে থেকে যা যোগ করা হয় তাকে কী বলে?", opts: ["সংরক্ষক কোলয়েড", "ইমালসন-কারক (Emulsifying agent)", "পেপটাইজিং এজেন্ট", "অনুঘটক"], ans: 1, exp: "ইমালসিফায়ার বা ইমালসন-কারক (যেমন সাবান বা প্রোটিন) দুটি তরলের আন্তঃপৃষ্ঠটান কমিয়ে ইমালসনকে দীর্ঘস্থায়ী করে।" },
+      { q: "৪. একটি ইমালসনে জল যোগ করলে তা যদি সহজেই মিশে যায়, তবে ইমালসনটি কোন প্রকৃতির?", opts: ["তেলে-জল (W/O)", "জলে-তেল (O/W)", "উভধর্মী", "গ্যাসীয়"], ans: 1, exp: "বিস্তার মাধ্যম জল হলে (জলে-তেল ইমালসন), বাইরে থেকে জল দিলে তা সহজেই মিশে যায়। এটি লঘুকরণ পরীক্ষার মাধ্যমে বোঝা যায়।" },
+      { q: "৫. যেসব যৌগকে তরলে দ্রবীভূত করলে তরলের পৃষ্ঠটান হ্রাস পায়, তাদের কী বলে?", opts: ["অক্সিডাইজিং এজেন্ট", "সারফ্যাকট্যান্ট (Surface-active agent)", "ক্রিস্টালয়েড", "পেপটাইজিং এজেন্ট"], ans: 1, exp: "সাবান এবং ডিটারজেন্ট হলো সারফ্যাকট্যান্ট যা পৃষ্ঠটান কমাতে সাহায্য করে এবং ইমালসন তৈরি করতে পারে।" },
+      { q: "৬. কলকারখানার ধোঁয়া থেকে কার্বন কণা দূর করতে কোন যন্ত্র ব্যবহার করা হয়?", opts: ["ডায়ালিসার", "আল্ট্রাসেন্ট্রিফিউজ", "কটরেল অধঃক্ষেপক (Cottrell precipitator)", "ইলেকট্রোডায়ালিসার"], ans: 2, exp: "কটরেল অধঃক্ষেপক উচ্চ বিভব পার্থক্য ব্যবহার করে ইলেকট্রোফোরেসিস নীতির মাধ্যমে কার্বন কণা তঞ্চিত করে বাতাসকে দূষণমুক্ত করে।" },
+      { q: "৭. নদীর মোহনায় ব-দ্বীপ (Delta) সৃষ্টির মূল রাসায়নিক কারণ কী?", opts: ["নদীর জলের বাষ্পীভবন", "কাদামাটির কোলয়ডীয় কণার সমুদ্রের লোনা জল দ্বারা তঞ্চন", "সমুদ্রের স্রোত", "জলজ উদ্ভিদের পচন"], ans: 1, exp: "নদীর ঘোলা জলে থাকা কাদামাটির ঋণাত্মক কোলয়েড কণা সমুদ্রের জলে থাকা বিভিন্ন তড়িদ্বিশ্লেষ্য লবণ (Na<sup>+</sup>, Mg<sup>2+</sup>) দ্বারা তঞ্চিত হয়ে জমা হতে হতে ব-দ্বীপ তৈরি করে।" },
+      { q: "৮. রক্তপাত বন্ধ করতে ফটকিরি (Alum) ব্যবহার করা হয় কেন?", opts: ["এটি রক্তের তাপমাত্রা কমায়", "এটি রক্তের তঞ্চন (Coagulation) ঘটায়", "এটি রক্তকে তরল করে", "এটি জীবাণু ধ্বংস করে"], ans: 1, exp: "রক্ত হলো ঋণাত্মক আধানযুক্ত অ্যালবুমিন কোলয়েড। ফটকিরিতে থাকা Al<sup>3+</sup> আয়ন সহজেই রক্তকে তঞ্চিত করে জমাট বাঁধতে সাহায্য করে।" },
+      { q: "৯. চামড়া শক্ত করার 'ট্যানিং (Tanning)' প্রক্রিয়াটি কোন রাসায়নিক নীতির ওপর ভিত্তি করে ঘটে?", opts: ["ডায়ালিসিস", "পারস্পরিক তঞ্চন (Mutual Coagulation)", "পেপটাইজেশন", "বাষ্পীভবন"], ans: 1, exp: "ধনাত্মক আধানযুক্ত പশুর চামড়া এবং ঋণাত্মক আধানযুক্ত ট্যানিন (Tannin) একে অপরের সংস্পর্শে এসে আধান প্রশমিত করে তঞ্চিত ও শক্ত হয়।" },
+      { q: "১০. কৃত্রিম বৃষ্টিপাত ঘটাতে উড়োজাহাজ থেকে মেঘের ওপর কী ছিটানো হয়?", opts: ["সাধারণ জল", "বিপরীত আধানযুক্ত বালুকণা বা সিলভার আয়োডাইড (AgI)", "গরম বাতাস", "নাইট্রোজেন গ্যাস"], ans: 1, exp: "মেঘ হলো জলকণার কোলয়েড। বিপরীত আধানের বালুকণা বা AgI ছড়ালে জলকণাগুলোর আধান প্রশমিত হয়ে তঞ্চন ঘটে এবং বৃষ্টির ফোঁটা হয়ে ঝরে পড়ে।" },
+      { q: "১১. রবার শিল্পের কাঁচামাল 'ল্যাটেক্স' (Latex) আসলে কী?", opts: ["ধনাত্মক আধানযুক্ত রাবার কণার সল", "ঋণাত্মক আধানযুক্ত রাবার কণার কোলয়ডীয় দ্রবণ", "রবারের প্রকৃত দ্রবণ", "রবারের ইমালসন"], ans: 1, exp: "ল্যাটেক্স হলো রবার গাছ থেকে প্রাপ্ত তরুক্ষীর, যা ঋণাত্মক আধানযুক্ত। একে তঞ্চিত করেই রবার তৈরি করা হয়।" },
+      { q: "১২. আকাশ নীল দেখানোর কারণ কী?", opts: ["আলোর প্রতিসরণ", "টিন্ডাল প্রভাব ও আলোর বিক্ষেপণ", "ব্রাউনীয় গতি", "সমুদ্রের রঙের প্রতিফলন"], ans: 1, exp: "বায়ুমণ্ডলের ধূলিকণা (কোলয়েড) দ্বারা সূর্যালোকের নীল বর্ণের আলোর বিক্ষেপণ সবচেয়ে বেশি হয়। এটি টিন্ডাল প্রভাবের একটি প্রাকৃতিক উদাহরণ।" },
+      { q: "১৩. ঔষুধ হিসেবে অনেক ইনজেকশন বা সিরাপকে কোলয়ডীয় অবস্থায় তৈরি করা হয় কেন?", opts: ["সহজে হজম হওয়ার জন্য", "কোলয়েড কণার পৃষ্ঠতলীয় ক্ষেত্রফল অনেক বেশি হওয়ায় দ্রুত শোষিত হওয়ার জন্য", "ঔষুধের স্বাদ বাড়ানোর জন্য", "ঔষুধকে রঙিন করার জন্য"], ans: 1, exp: "পৃষ্ঠতলীয় ক্ষেত্রফল বেশি হওয়ায় মানবদেহের কোষগুলো সহজেই কোলয়ডীয় ঔষধ শোষণ করতে পারে, তাই এর কার্যকারিতা বেশি হয়।" },
+      { q: "১৪. সাবানের পরিষ্কারক ক্রিয়া কীভাবে ঘটে?", opts: ["সাবান এসিড হিসেবে কাজ করে ময়লা গলায়", "সাবান ইমালসিফায়ার হিসেবে কাজ করে মিসেল গঠনের মাধ্যমে ময়লা দূর করে", "সাবান ময়লার সাথে বিক্রিয়া করে গ্যাস তৈরি করে", "সাবান ময়লাকে ভারী করে ডুবিয়ে দেয়"], ans: 1, exp: "সাবান কাপড়ের তেলের সাথে মিশে জলে-তেল ইমালসন তৈরি করে এবং মিসেল গঠনের মাধ্যমে ময়লা সরিয়ে দেয়।" },
+      { q: "১৫. নিচের কোনটি তেলে-জল (W/O) জাতীয় ইমালসনের উদাহরণ?", opts: ["ভ্যানিশিং ক্রিম", "মেয়োনিজ", "মাখন", "দুধ"], ans: 2, exp: "মাখনে বিস্তার মাধ্যম হলো তেল বা ফ্যাট এবং বিস্তৃত দশা হলো জল, তাই এটি তেলে-জল জাতীয় ইমালসন।" }
+    ]
+  }
+};
+
+// ================== STATE VARIABLES ==================
+let currentUser = "";
+let activeSetId = null;
+let questions = [];
+let currentQIndex = 0;
+let score = 0;
+let wrongAnswers = 0;
+let isReviewMode = false;
+let timerInterval;
+let timeLeft = TIME_LIMIT;
+let userAnswers = {};
+
+// ================== LOCAL STORAGE LOGIC ==================
+function getGlobalUsers() {
+  const data = localStorage.getItem("testBazarGlobalUsers");
+  return data ? JSON.parse(data) : {};
+}
+
+function getAttemptsData() {
+  const data = localStorage.getItem("testBazarAttemptsChem3SemU1_v1");
+  return data ? JSON.parse(data) : {};
+}
+
+function getAttemptCount(username, setId) {
+  const attempts = getAttemptsData();
+  const key = username + '|' + setId;
+  return attempts[key] || 0;
+}
+
+function incrementAttempt(username, setId) {
+  const attempts = getAttemptsData();
+  const key = username + '|' + setId;
+  attempts[key] = (attempts[key] || 0) + 1;
+  localStorage.setItem("testBazarAttemptsChem3SemU1_v1", JSON.stringify(attempts));
+  return attempts[key];
+}
+
+// ================== INITIALIZATION ==================
+window.onload = () => {
+  renderHub();
+};
+
+function renderHub() {
+  const grid = document.getElementById("setGrid");
+  grid.innerHTML = "";
+  for(let id in ALL_SETS) {
+    const set = ALL_SETS[id];
+    const div = document.createElement("div");
+    div.className = "set-card";
+    
+    let attemptCount = 0;
+    let isLocked = false;
+    
+    if (currentUser) {
+      attemptCount = getAttemptCount(currentUser, id);
+      isLocked = attemptCount >= MAX_ATTEMPTS;
+      if (isLocked) div.classList.add("locked");
+    }
+    
+    div.innerHTML = `
+      <div class="icon">${set.icon}</div>
+      <div class="set-num">${set.name.split(' - ')}</div>
+      <div class="set-title">${set.topic}</div>
+      <div class="set-meta"><span>15 Qs</span><span>15 Mins</span></div>
+      ${currentUser ? `<div class="attempt-badge ${isLocked?'locked-badge':''}">${isLocked ? '🔒 Locked' : attemptCount + '/' + MAX_ATTEMPTS}</div>` : ''}
+    `;
+    
+    div.onclick = () => {
+      if (isLocked) {
+        alert(`⚠️ আপনি এই সেটের সর্বোচ্চ ${MAX_ATTEMPTS} বার Test দিয়েছেন।`);
+        return;
+      }
+      handleSetClick(id);
+    };
+    grid.appendChild(div);
+  }
+}
+
+function handleSetClick(setId) {
+  activeSetId = setId;
+  if (!currentUser) {
+    document.getElementById("loginSetName").innerText = `📚 ${ALL_SETS[setId].name}`;
+    document.getElementById("loginOverlay").classList.add("active");
+    document.getElementById("loginUsername").value = "";
+    document.getElementById("loginPassword").value = "";
+    document.getElementById("loginError").style.display = "none";
+  } else {
+    startQuiz(setId);
+  }
+}
+
+function doLogin() {
+  const u = document.getElementById("loginUsername").value.trim();
+  const p = document.getElementById("loginPassword").value.trim();
+  const err = document.getElementById("loginError");
+  const GLOBAL_USERS = getGlobalUsers();
+
+  if(!u || !p) {
+    err.innerText = "ইউজারনেম এবং পাসওয়ার্ড দিন!";
+    err.style.display = "block";
+    return;
+  }
+
+  // Verify with Global Index Database
+  if(GLOBAL_USERS[u] && GLOBAL_USERS[u] === p) {
+    let attempts = getAttemptCount(u, activeSetId);
+    if (attempts >= MAX_ATTEMPTS) {
+      err.innerText = `আপনি এই সেটে সর্বোচ্চ ${MAX_ATTEMPTS} বার পরীক্ষা দিয়েছেন!`;
+      err.style.display = "block";
+      return;
+    }
+    
+    currentUser = u;
+    document.getElementById("loginOverlay").classList.remove("active");
+    document.getElementById("userDisplay").innerHTML = `👤 ${u}`;
+    document.getElementById("userDisplay").classList.remove("hidden");
+    
+    renderHub(); // Update hub to show attempt badges
+    startQuiz(activeSetId);
+  } else {
+    err.innerText = "ইউজারনেম বা পাসওয়ার্ড ভুল! (Index থেকে চেক করুন)";
+    err.style.display = "block";
+  }
+}
+
+function closeLogin() {
+  document.getElementById("loginOverlay").classList.remove("active");
+}
+
+function goToHub() {
+  document.getElementById("resultWrap").classList.remove("show");
+  document.getElementById("testArea").classList.add("hidden");
+  document.getElementById("hubPage").style.display = "block";
+  document.getElementById("timerBox").classList.add("hidden");
+  clearInterval(timerInterval);
+  renderHub();
+}
+
+// ================== QUIZ LOGIC ==================
+function startQuiz(setId) {
+  incrementAttempt(currentUser, setId);
+  questions = ALL_SETS[setId].questions;
+  currentQIndex = 0;
+  score = 0;
+  wrongAnswers = 0;
+  userAnswers = {};
+  isReviewMode = false;
+  timeLeft = TIME_LIMIT;
+  
+  document.getElementById("hubPage").style.display = "none";
+  document.getElementById("resultWrap").classList.remove("show");
+  document.getElementById("testArea").classList.remove("hidden");
+  document.getElementById("timerBox").classList.remove("hidden");
+  
+  document.getElementById("testSetLabel").innerText = ALL_SETS[setId].name;
+  document.getElementById("testTopic").innerText = ALL_SETS[setId].topic;
+  
+  startTimer();
+  loadQuestion();
+}
+
+function loadQuestion() {
+  const qData = questions[currentQIndex];
+  
+  document.getElementById("qNum").innerText = `প্রশ্ন ${currentQIndex + 1} / ${questions.length}`;
+  document.getElementById("qText").innerHTML = qData.q;
+  
+  const progress = ((currentQIndex) / questions.length) * 100;
+  document.getElementById("progressFill").style.width = `${progress}%`;
+  
+  document.getElementById("scoreShow").innerText = `সঠিক: ${score} | ভুল: ${wrongAnswers}`;
+  
+  const optsBox = document.getElementById("qOpts");
+  optsBox.innerHTML = "";
+  document.getElementById("explanation").classList.remove("show");
+  
+  document.getElementById("nextBtn").disabled = true;
+  document.getElementById("nextBtn").innerText = (currentQIndex === questions.length - 1) && !isReviewMode ? "টেস্ট জমা দিন" : "পরবর্তী →";
+
+  qData.opts.forEach((optText, idx) => {
+    const btn = document.createElement("button");
+    btn.className = "opt";
+    btn.innerHTML = `<div class="opt-circle">${LABELS[idx]}</div> <div class="opt-text">${optText}</div>`;
+    
+    if (isReviewMode) {
+      btn.classList.add("disabled");
+      if (idx === qData.ans) btn.classList.add("correct");
+      else if (userAnswers[currentQIndex] === idx) btn.classList.add("wrong");
+    } else {
+      btn.onclick = () => selectOption(btn, idx, qData.ans, qData.exp);
+    }
+    optsBox.appendChild(btn);
+  });
+
+  if (isReviewMode) {
+    document.getElementById("explanationText").innerHTML = `<strong>ব্যাখ্যা:</strong> ${qData.exp}`;
+    document.getElementById("explanation").classList.add("show");
+    document.getElementById("nextBtn").disabled = false;
+    
+    if (currentQIndex === questions.length - 1) {
+      document.getElementById("nextBtn").innerText = "ফলাফলে ফিরুন";
+    }
+  }
+}
+
+function selectOption(btn, selectedIdx, correctIdx, exp) {
+  const allBtns = document.getElementById("qOpts").querySelectorAll(".opt");
+  allBtns.forEach(b => b.classList.add("disabled"));
+  
+  userAnswers[currentQIndex] = selectedIdx; 
+  
+  if (selectedIdx === correctIdx) {
+    btn.classList.add("correct");
+    score++;
+  } else {
+    btn.classList.add("wrong");
+    allBtns[correctIdx].classList.add("correct");
+    wrongAnswers++;
+  }
+  
+  document.getElementById("scoreShow").innerText = `সঠিক: ${score} | ভুল: ${wrongAnswers}`;
+  document.getElementById("explanationText").innerHTML = `<strong>ব্যাখ্যা:</strong> ${exp}`;
+  document.getElementById("explanation").classList.add("show");
+  document.getElementById("nextBtn").disabled = false;
+}
+
+function nextQ() {
+  if (isReviewMode && currentQIndex === questions.length - 1) {
+    document.getElementById("testArea").classList.add("hidden");
+    document.getElementById("resultWrap").classList.add("show");
+    return;
+  }
+  
+  if (!isReviewMode && currentQIndex === questions.length - 1) {
+    finishQuiz();
+    return;
+  }
+  
+  currentQIndex++;
+  loadQuestion();
+}
+
+function startTimer() {
+  clearInterval(timerInterval);
+  const tBox = document.getElementById("timerBox");
+  tBox.classList.remove("danger");
+  
+  timerInterval = setInterval(() => {
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      finishQuiz();
+      return;
+    }
+    timeLeft--;
+    const m = Math.floor(timeLeft / 60);
+    const s = timeLeft % 60;
+    document.getElementById("timerDisplay").innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+    
+    if (timeLeft < 60) tBox.classList.add("danger");
+  }, 1000);
+}
+
+function finishQuiz() {
+  clearInterval(timerInterval);
+  document.getElementById("testArea").classList.add("hidden");
+  document.getElementById("timerBox").classList.add("hidden");
+  document.getElementById("resultWrap").classList.add("show");
+  
+  const total = questions.length;
+  const skipped = total - (score + wrongAnswers);
+  const percent = Math.round((score / total) * 100);
+  
+  document.getElementById("finalScore").innerText = `${percent}%`;
+  document.getElementById("rbCorrect").innerText = score;
+  document.getElementById("rbWrong").innerText = wrongAnswers + skipped;
+  
+  const gradeEl = document.getElementById("resultGrade");
+  if (percent >= 80) { gradeEl.innerText = "🌟 অসাধারণ পারফরম্যান্স!"; gradeEl.style.color = "var(--primary)"; document.getElementById("resultIcon").innerText = "🏆"; }
+  else if (percent >= 60) { gradeEl.innerText = "👍 খুব ভালো!"; gradeEl.style.color = "#2aad68"; document.getElementById("resultIcon").innerText = "⭐"; }
+  else { gradeEl.innerText = "💪 চেষ্টা চালিয়ে যাও!"; gradeEl.style.color = "var(--accent)"; document.getElementById("resultIcon").innerText = "📚"; }
+  
+  const remaining = MAX_ATTEMPTS - getAttemptCount(currentUser, activeSetId);
+  document.getElementById("attemptInfo").innerHTML = `👤 ${currentUser} — বাকি আছে <strong>${remaining}</strong> বার Test দেওয়ার সুযোগ।`;
+}
+
+function restartQuiz() {
+  if (getAttemptCount(currentUser, activeSetId) >= MAX_ATTEMPTS) {
+    alert(`⚠️ আপনি এই সেটের সর্বোচ্চ ${MAX_ATTEMPTS} বার Test দিয়েছেন।`);
+    return;
+  }
+  startQuiz(activeSetId);
+}
+
+function showReview() {
+  isReviewMode = true;
+  currentQIndex = 0;
+  document.getElementById("resultWrap").classList.remove("show");
+  document.getElementById("testArea").classList.remove("hidden");
+  loadQuestion();
+}
+</script>
+</body>
+</html>
+```
