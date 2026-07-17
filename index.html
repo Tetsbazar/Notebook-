@@ -1,462 +1,211 @@
+আপনার নির্দেশ অনুযায়ী Science-এর সবকটি বিষয় (Physics, Chemistry, Mathematics, Biology, Bengali এবং English) যুক্ত করে সম্পূর্ণ নতুন `index.html` (ড্যাশবোর্ড) ফাইলটি তৈরি করে দেওয়া হলো। 
+
+নিচের কোডটি কপি করে `index.html` নামে সেভ করুন:
+
+```html
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Test Bazar — Science Free Demo Test | 3rd Sem</title>
-<link href="https://fonts.googleapis.com/css2?family=Tiro+Bangla&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
-<style>
-/* ================== CSS STYLES ================== */
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Syne', sans-serif; background: #f4f9f9; min-height: 100vh; color: #2c3e50; }
-.en-font { font-family: 'Syne', sans-serif; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Bazar - 3rd Semester Science Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Tiro+Bangla:ital@0;1&display=swap" rel="stylesheet">
+    <style>
+        /* ================= COLOR SCHEME & VARIABLES ================= */
+        :root {
+            --primary: #1a7a4a;
+            --primary-hover: #2aad68;
+            --accent: #f9a825;
+            --bg-main: #f0faf4;
+            --bg-card: #ffffff;
+            --text-main: #1c2e24;
+            --text-meta: #5a7a66;
+            --border-color: #c5dccb;
+        }
 
-.top-bar { background: #1a7a4a; padding: 0.8rem 1.5rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 15px rgba(26, 122, 74, 0.2); }
-.top-logo { font-size: 1.2rem; font-weight: 800; color: white; cursor: pointer; letter-spacing: 1px;}
-.top-logo span { color: #f9a825; }
-.timer-box { background: rgba(255,255,255,0.25); padding: 0.3rem 0.8rem; border-radius: 6px; color: white; font-weight: 800; font-size: 0.95rem; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Syne', sans-serif; background: var(--bg-main); color: var(--text-main); min-height: 100vh; }
+        .en-font { font-family: 'Syne', sans-serif; }
+        a { text-decoration: none; }
 
-.main { max-width: 800px; margin: 0 auto; padding: 1.5rem; }
+        /* Top Bar */
+        .top-bar { background: var(--primary); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; color: white; box-shadow: 0 4px 15px rgba(26,122,74,0.2); position: sticky; top: 0; z-index: 100; }
+        .logo { font-size: 1.5rem; font-weight: 800; letter-spacing: 1px; }
+        .logo span { color: var(--accent); }
 
-/* HUB PAGE */
-.hub-header { text-align: center; margin-bottom: 2rem; }
-.hub-header h1 { font-family: 'Tiro Bangla', serif; color: #1a7a4a; font-size: 1.6rem; margin-bottom: 0.5rem; line-height: 1.4; }
-.hub-header p { color: #5a7a66; font-size: 0.95rem; font-family: 'Tiro Bangla', serif; font-weight: bold; }
-.set-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.2rem; }
-.set-card { background: white; border: 2px solid #c5dccb; border-radius: 12px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(26, 122, 74, 0.05);}
-.set-card:hover { transform: translateY(-4px); background: #f0faf4; border-color: #1a7a4a; box-shadow: 0 6px 20px rgba(26, 122, 74, 0.12); }
-.set-card .icon { font-size: 2.2rem; margin-bottom: 0.4rem; }
-.set-card .set-num { font-weight: 800; font-size: 1.2rem; color: #1a7a4a; margin-bottom: 5px; font-family: 'Tiro Bangla', serif;}
-.set-card .set-title { font-family: 'Tiro Bangla', serif; font-size: 0.9rem; color: #1c2e24; margin: 0.2rem 0 0.8rem; font-weight: bold;}
-.set-card .set-meta { display: flex; gap: 0.8rem; font-size: 0.8rem; color: white; justify-content: center; font-weight: bold;}
-.set-card .set-meta span { background: #f9a825; padding: 0.3rem 0.8rem; border-radius: 4px; color: #1c2e24; }
-.free-badge { background: #d32f2f; color: white; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; display: inline-block; margin-bottom: 10px; animation: pulse 1.5s infinite; letter-spacing: 1px;}
-@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        /* Main Container */
+        .main-container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+        .header-text { text-align: center; margin-bottom: 2rem; }
+        .header-text h1 { font-family: 'Tiro Bangla', serif; font-size: 2rem; color: var(--primary); margin-bottom: 0.5rem; line-height: 1.4; }
+        .header-text p { font-family: 'Tiro Bangla', serif; font-size: 1.05rem; color: var(--text-meta); font-weight: bold; }
 
-/* QUIZ AREA */
-.quiz-info { background: white; border-radius: 10px; padding: 1rem 1.2rem; margin-bottom: 1.2rem; border: 1px solid #c5dccb; display: flex; gap: 1rem; flex-wrap: wrap; box-shadow: 0 2px 8px rgba(0,0,0,0.03);}
-.info-item { font-family: 'Tiro Bangla', serif; font-size: 0.9rem; color: #1c2e24; font-weight: bold; }
-.info-item strong { color: #1a7a4a; font-size: 1rem;}
+        /* Demo Section */
+        .demo-section { background: linear-gradient(135deg, #f9a825, #f57f17); padding: 25px; border-radius: 16px; text-align: center; margin-bottom: 30px; box-shadow: 0 8px 20px rgba(249, 168, 37, 0.3); }
+        .demo-section h2 { font-family: 'Tiro Bangla', serif; color: white; font-size: 1.8rem; margin-bottom: 10px; }
+        .demo-section p { font-family: 'Tiro Bangla', serif; color: rgba(255,255,255,0.9); font-size: 1.1rem; margin-bottom: 20px; font-weight: bold; }
+        .demo-btn { background: white; color: #f57f17; padding: 12px 30px; border-radius: 30px; font-weight: bold; font-size: 1.2rem; display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: 0.3s; font-family: 'Tiro Bangla', serif; }
+        .demo-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(0,0,0,0.2); }
+        .wa-btn { background: #25D366; color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; font-family: 'Syne', sans-serif; transition: 0.2s;}
+        .wa-btn:hover { background: #128C7E; transform: translateY(-2px);}
 
-.progress-wrap { background: #c5dccb; border-radius: 6px; height: 6px; margin-bottom: 1.2rem; overflow: hidden; }
-.progress-fill { height: 100%; background: #1a7a4a; border-radius: 6px; transition: width 0.4s ease; }
+        /* Subject Grid */
+        .subject-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; }
+        .subject-card { background: var(--bg-card); border-radius: 16px; padding: 25px; border: 2px solid var(--border-color); box-shadow: 0 5px 15px rgba(0,0,0,0.03); transition: 0.3s; }
+        .subject-card:hover { border-color: var(--primary); box-shadow: 0 10px 30px rgba(26,122,74,0.1); }
+        .subject-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px dashed var(--border-color); }
+        .subject-icon { font-size: 2.2rem; background: var(--bg-main); width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 12px; border: 1px solid var(--border-color); }
+        .subject-title { font-size: 1.5rem; font-weight: 700; color: var(--primary); font-family: 'Tiro Bangla', serif;}
 
-.q-card { background: white; border-radius: 14px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.04); }
-.q-num { font-size: 0.85rem; font-weight: 800; color: #1a7a4a; margin-bottom: 0.8rem; background: #f0faf4; display: inline-block; padding: 4px 12px; border-radius: 6px;}
-.q-text { font-family: 'Tiro Bangla', serif; font-size: 1.05rem; color: #1c2e24; font-weight: 700; line-height: 1.6; margin-bottom: 1.2rem; }
+        /* Chapter List */
+        .chapter-list { display: flex; flex-direction: column; gap: 10px; }
+        .chapter-link { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: var(--bg-main); border-radius: 10px; color: var(--text-main); font-weight: bold; font-size: 1.05rem; transition: 0.2s; border: 1px solid transparent; font-family: 'Tiro Bangla', serif;}
+        .chapter-link:hover { background: var(--bg-card); border-color: var(--primary); color: var(--primary); padding-left: 20px; }
+        .chapter-meta { font-size: 0.85rem; color: var(--text-meta); background: rgba(0,0,0,0.05); padding: 3px 8px; border-radius: 6px; font-family: 'Syne', sans-serif;}
 
-.opts { display: flex; flex-direction: column; gap: 0.7rem; }
-.opt { display: flex; align-items: flex-start; gap: 12px; padding: 0.8rem 1rem; border: 1.5px solid #c5dccb; border-radius: 10px; background: transparent; cursor: pointer; text-align: left; transition: all 0.2s; width: 100%; }
-.opt:hover:not(.disabled) { border-color: #1a7a4a; background: #f0faf4; }
-.opt-circle { min-width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid #5a7a66; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #5a7a66; flex-shrink: 0; background: white;}
-.opt-text { font-family: 'Tiro Bangla', serif; font-size: 0.95rem; color: #1c2e24; line-height: 1.5; font-weight: 600; padding-top: 2px; }
-
-.opt.correct { border-color: #1a7a4a; background: #f0faf4; }
-.opt.correct .opt-circle { background: #1a7a4a; border-color: #1a7a4a; color: white; }
-.opt.wrong { border-color: #d32f2f; background: #ffebee; }
-.opt.wrong .opt-circle { background: #d32f2f; border-color: #d32f2f; color: white; }
-.opt.disabled { cursor: default; }
-
-/* BEAUTIFUL EXPLANATION BOX */
-.explanation { background: #fff8e1; border: 1.5px solid #ffe0b2; border-left: 5px solid #f9a825; border-radius: 8px; padding: 1.2rem; margin-top: 1.2rem; display: none; box-shadow: 0 2px 10px rgba(249, 168, 37, 0.08); position: relative;}
-.explanation.show { display: block; animation: fadeIn 0.4s; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-.explanation-title { font-family: 'Tiro Bangla', serif; color: #e65100; font-size: 0.95rem; font-weight: 800; margin-bottom: 6px; display: flex; align-items: center; gap: 5px;}
-.explanation p { font-family: 'Tiro Bangla', serif; font-size: 0.9rem; color: #424242; line-height: 1.6; font-weight: bold;}
-
-.nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; border-top: 1px solid #eceff1; padding-top: 1.2rem;}
-.score-show { font-family: 'Tiro Bangla', serif; font-size: 0.9rem; color: #1a7a4a; font-weight: bold; background: #f0faf4; padding: 5px 12px; border-radius: 6px;}
-.next-btn { background: #1a7a4a; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-family: 'Tiro Bangla', serif; font-size: 0.95rem; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 3px 8px rgba(26, 122, 74, 0.25);}
-.next-btn:hover:not(:disabled) { background: #145e38; transform: translateY(-2px);}
-.next-btn:disabled { background: #c5dccb; cursor: not-allowed; box-shadow: none; transform: none;}
-
-/* RESULT AREA */
-.result-wrap { background: white; border-radius: 14px; padding: 2rem; text-align: center; border: 1px solid #c5dccb; display: none; max-width: 550px; margin: 0 auto; box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
-.result-wrap.show { display: block; } 
-.result-icon { font-size: 3.5rem; margin-bottom: 0.8rem; line-height: 1; }
-.result-score { font-size: 3.5rem; font-weight: 800; color: #1a7a4a; line-height: 1; margin-bottom: 5px; }
-.result-total { font-size: 1rem; color: #5a7a66; margin-bottom: 1rem; font-family: 'Tiro Bangla', serif; font-weight: bold;}
-.result-grade { font-size: 1.3rem; font-weight: 800; margin-bottom: 1.5rem; font-family: 'Tiro Bangla', serif; color: #f9a825; }
-
-.result-bars { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-bottom: 1.5rem; }
-.result-bar { background: #f0faf4; border-radius: 10px; padding: 1.2rem; text-align: center; border: 1px solid #c5dccb; }
-.rb-num { font-size: 1.8rem; font-weight: 800; }
-.rb-label { font-family: 'Tiro Bangla', serif; font-size: 0.9rem; color: #1a7a4a; margin-top: 0.3rem; font-weight: bold;}
-
-.result-actions { display: flex; flex-direction: column; gap: 10px; width: 100%; }
-.result-actions button, .result-actions a { width: 100%; padding: 12px; border-radius: 8px; font-family: 'Tiro Bangla', serif; font-size: 1rem; font-weight: 800; cursor: pointer; border: none; transition: 0.2s; text-decoration: none; display: block;}
-.btn-review { background: #1a7a4a; color: white; box-shadow: 0 3px 8px rgba(26, 122, 74, 0.25);}
-.btn-review:hover { background: #145e38; }
-.btn-home { background: transparent; color: #1c2e24; border: 1.5px solid #c5dccb !important; }
-.btn-home:hover { background: #f0faf4; }
-
-.hidden { display: none !important; }
-</style>
+        @media (max-width: 768px) {
+            .top-bar { padding: 1rem; }
+            .main-container { padding: 1.5rem 1rem; }
+            .subject-card { padding: 15px; }
+        }
+    </style>
 </head>
 <body>
 
-<div class="top-bar">
-  <div class="top-logo" onclick="goToHub()">Test<span>Bazar</span> (PRO DEMO)</div>
-  <div class="timer-box hidden" id="timerBox">⏱ <span id="timerDisplay">15:00</span></div>
-</div>
+<!-- TOP BAR -->
+<header class="top-bar">
+    <div class="logo en-font">Test<span>Bazar</span></div>
+    <div class="en-font" style="font-weight: bold;">3rd Semester (Science)</div>
+</header>
 
-<div class="main">
+<!-- MAIN DASHBOARD -->
+<div class="main-container">
+    <div class="header-text">
+        <h1>৩য় সেমিস্টার (Science) মক টেস্ট ড্যাশবোর্ড</h1>
+        <p>আপনার বিষয়ের নির্দিষ্ট অধ্যায় নির্বাচন করে টেস্ট দেওয়া শুরু করুন</p>
+    </div>
 
-  <!-- ===== HUB PAGE ===== -->
-  <div id="hubPage">
-    <div class="hub-header">
-      <h1>🎁 3rd Semester (Science) — Free Demo</h1>
-      <p>পাসওয়ার্ড ছাড়াই নিচের যেকোনো বিষয়ের সম্পূর্ণ ১৫টি প্রশ্নের ডেমো টেস্ট শুরু করুন!</p>
+    <!-- FREE DEMO / WHATSAPP SECTION -->
+    <div class="demo-section">
+        <h2>🆓 ফ্রি ডেমো টেস্ট (সবার জন্য)</h2>
+        <p>Science বিভাগের ডেমো টেস্টগুলি দিতে নিচের বাটনে ক্লিক করুন। কোনো পাসওয়ার্ড লাগবে না!</p>
+        <a href="Demo_Test_Science.html" class="demo-btn">ডেমো টেস্ট শুরু করুন</a>
+        <div style="margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 15px;">
+            <h3 style="color: white; margin-bottom: 5px; font-size: 1.2rem; font-family: 'Tiro Bangla', serif;">ইউজারনেম ও পাসওয়ার্ড প্রয়োজন?</h3>
+            <p style="color: rgba(255,255,255,0.9); font-size: 0.95rem; margin-bottom: 0;">মূল টেস্টগুলো দেওয়ার জন্য আইডি না থাকলে নিচে ক্লিক করে WhatsApp-এ মেসেজ করুন:</p>
+            <a href="https://wa.me/918710032880?text=Hello%20Test%20Bazar,%20I%20need%20a%20username%20and%20password." target="_blank" class="wa-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0.068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.921l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.865-.583-.43-1.022-1.006-1.141-1.144-.119-.137-.013-.21.085-.308.088-.089.197-.23.296-.346.099-.114.133-.197.197-.326.065-.133.033-.248-.016-.346-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/></svg>
+                WhatsApp: 8710032880
+            </a>
+        </div>
     </div>
-    <div class="set-grid" id="setGrid"></div>
-    <br><br>
-    <a href="Index_3rdSem_Science.html" style="display: block; text-align: center; font-family: 'Tiro Bangla', serif; color: #1a7a4a; font-weight: bold; font-size: 1rem; text-decoration: underline;">← মূল ড্যাশবোর্ডে ফিরে যান</a>
-  </div>
 
-  <!-- ===== TEST AREA ===== -->
-  <div id="testArea" class="hidden">
-    <div class="quiz-info">
-      <div class="info-item">🎓 <strong id="testSetName">বিষয়</strong> — Free Demo | <span id="testSetLabel">Full Set</span></div>
-      <div class="info-item">📝 <span id="testTopic">Topic</span></div>
-    </div>
-    
-    <div class="progress-wrap"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
-    
-    <div class="q-card" id="qCard">
-      <div class="q-num" id="qNum">প্রশ্ন ১ / ১৫</div>
-      <div class="q-text" id="qText"></div>
-      <div class="opts" id="qOpts"></div>
-      
-      <div class="explanation" id="explanation">
-        <div class="explanation-title">💡 বিস্তারিত ব্যাখ্যা:</div>
-        <p id="explanationText"></p>
-      </div>
-      
-      <div class="nav-row">
-        <div class="score-show" id="scoreShow">সঠিক: ০ | ভুল: ০</div>
-        <button class="next-btn" id="nextBtn" onclick="nextQ()" disabled>পরবর্তী প্রশ্ন →</button>
-      </div>
-    </div>
-  </div>
+    <div class="subject-grid">
+        <!-- PHYSICS (পদার্থবিদ্যা) -->
+        <div class="subject-card">
+            <div class="subject-header">
+                <div class="subject-icon">🔭</div>
+                <div class="subject-title">পদার্থবিদ্যা (Physics)</div>
+            </div>
+            <div class="chapter-list">
+                <a href="#" class="chapter-link"><span>Unit 1: প্রথম অধ্যায়</span><span class="chapter-meta">10 Sets</span></a>
+                <a href="#" class="chapter-link"><span>Unit 2: দ্বিতীয় অধ্যায়</span><span class="chapter-meta">8 Sets</span></a>
+                <a href="#" class="chapter-link"><span>Unit 3: তৃতীয় অধ্যায়</span><span class="chapter-meta">12 Sets</span></a>
+                <a href="#" class="chapter-link"><span>Unit 4: চতুর্থ অধ্যায়</span><span class="chapter-meta">7 Sets</span></a>
+            </div>
+        </div>
 
-  <!-- ===== RESULT AREA ===== -->
-  <div class="result-wrap" id="resultWrap">
-    <div class="result-icon" id="resultIcon">🏆</div>
-    <div class="result-score en-font" id="finalScore">100%</div>
-    <div class="result-total">সম্পূর্ণ স্কোর</div>
-    <div class="result-grade" id="resultGrade">অসাধারণ!</div>
-    
-    <div class="result-bars">
-      <div class="result-bar">
-        <div class="rb-num en-font" id="rbCorrect" style="color:#1a7a4a">0</div>
-        <div class="rb-label">সঠিক উত্তর</div>
-      </div>
-      <div class="result-bar">
-        <div class="rb-num en-font" id="rbWrong" style="color:#d32f2f">0</div>
-        <div class="rb-label">ভুল/স্কিপ</div>
-      </div>
-    </div>
-    
-    <div class="result-actions">
-      <button class="btn-review" onclick="showReview()">👀 সঠিক উত্তর ও ব্যাখ্যা দেখুন</button>
-      <button class="btn-home" onclick="goToHub()">🏠 অন্যান্য বিষয়ের ডেমো দিন</button>
-      <a href="Index_3rdSem_Science.html" class="btn-home" style="background: #f9a825; color: #1c2e24; border-color: #f9a825 !important; margin-top: 5px;">🚀 মূল টেস্ট ড্যাশবোর্ডে প্রবেশ করুন</a>
-    </div>
-  </div>
+        <!-- CHEMISTRY (রসায়ন) -->
+        <div class="subject-card">
+            <div class="subject-header">
+                <div class="subject-icon">🧪</div>
+                <div class="subject-title">রসায়ন (Chemistry)</div>
+            </div>
+            <div class="chapter-list">
+                <a href="#" class="chapter-link"><span>Unit 1: প্রথম অধ্যায়</span><span class="chapter-meta">12 Sets</span></a>
+                <a href="#" class="chapter-link"><span>Unit 2: দ্বিতীয় অধ্যায়</span><span class="chapter-meta">9 Sets</span></a>
+                <a href="#" class="chapter-link"><span>Unit 3: তৃতীয় অধ্যায়</span><span class="chapter-meta">10 Sets</span></a>
+                <a href="#" class="chapter-link"><span>Unit 4: চতুর্থ অধ্যায়</span><span class="chapter-meta">8 Sets</span></a>
+            </div>
+        </div>
 
+        <!-- MATHEMATICS (গণিত) -->
+        <div class="subject-card">
+            <div class="subject-header">
+                <div class="subject-icon">📐</div>
+                <div class="subject-title">গণিত (Mathematics)</div>
+            </div>
+            <div class="chapter-list">
+                <a href="#" class="chapter-link"><span>Unit 1: অ্যালজেব্রা (Algebra)</span><span class="chapter-meta">15 Sets</span></a>
+                <a href="#" class="chapter-link"><span>Unit 2: ক্যালকুলাস (Calculus)</span><span class="chapter-meta">10 Sets</span></a>
+                <a href="#" class="chapter-link"><span>Unit 3: জ্যামিতি (Geometry)</span><span class="chapter-meta">14 Sets</span></a>
+                <a href="#" class="chapter-link"><span>Unit 4: ভেক্টর (Vectors)</span><span class="chapter-meta">8 Sets</span></a>
+            </div>
+        </div>
+
+        <!-- BIOLOGY (জীববিদ্যা) -->
+        <div class="subject-card">
+            <div class="subject-header">
+                <div class="subject-icon">🧬</div>
+                <div class="subject-title">জীববিদ্যা (Biology)</div>
+            </div>
+            <div class="chapter-list">
+                <a href="#" class="chapter-link"><span>Unit 1: প্রথম অধ্যায়</span><span class="chapter-meta">10 Sets</span></a>
+                <a href="#" class="chapter-link"><span>Unit 2: দ্বিতীয় অধ্যায়</span><span class="chapter-meta">8 Sets</span></a>
+                <a href="#" class="chapter-link"><span>Unit 3: তৃতীয় অধ্যায়</span><span class="chapter-meta">11 Sets</span></a>
+                <a href="#" class="chapter-link"><span>Unit 4: চতুর্থ অধ্যায়</span><span class="chapter-meta">9 Sets</span></a>
+            </div>
+        </div>
+
+        <!-- BENGALI (বাংলা) -->
+        <div class="subject-card">
+            <div class="subject-header">
+                <div class="subject-icon">📝</div>
+                <div class="subject-title">বাংলা (Bengali)</div>
+            </div>
+            <div class="chapter-list">
+                <a href="#" class="chapter-link"><span>গল্প ও কবিতা অংশ</span><span class="chapter-meta">10 Sets</span></a>
+                <a href="#" class="chapter-link"><span>নাটক ও প্রবন্ধ অংশ</span><span class="chapter-meta">8 Sets</span></a>
+                <a href="#" class="chapter-link"><span>ভাষা ও ব্যাকরণ</span><span class="chapter-meta">12 Sets</span></a>
+            </div>
+        </div>
+
+        <!-- ENGLISH (ইংরেজি) -->
+        <div class="subject-card">
+            <div class="subject-header">
+                <div class="subject-icon">📖</div>
+                <div class="subject-title">ইংরেজি (English)</div>
+            </div>
+            <div class="chapter-list">
+                <a href="#" class="chapter-link"><span>Prose & Poetry</span><span class="chapter-meta">12 Sets</span></a>
+                <a href="#" class="chapter-link"><span>Grammar & Vocabulary</span><span class="chapter-meta">15 Sets</span></a>
+                <a href="#" class="chapter-link"><span>Writing Skill</span><span class="chapter-meta">5 Sets</span></a>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-// ============================================================
-// গ্লোবাল ভেরিয়েবল (15 Minutes Timer)
-// ============================================================
-const TIME_LIMIT = 15 * 60; // 15 Minutes
-const LABELS = ['ক', 'খ', 'গ', 'ঘ'];
-
-let currentSetId = 1;
-let cur = 0, score = 0, wrong = 0, answered = false;
-let timerInterval, timeLeft = TIME_LIMIT;
-let userAnswers = [];
-let isReviewMode = false;
-let TOTAL_QS = 0;
-
-// ============================================================
-// Science এর ৪ টি বিষয়ের ফ্রি ডেমো প্রশ্ন (১৫টি করে)
-// ============================================================
-const allSets = {
-  1: {
-    subject: 'জীববিদ্যা (Biology)', icon: '🧬', topic: 'সপুষ্পক উদ্ভিদের যৌন জনন',
-    questions: [
-      { q: "১. একটি সম্পূর্ণ বা আদর্শ ফুলে কয়টি স্তবক থাকে?", opts: ["২টি", "৩টি", "৪টি", "৫টি"], ans: 2, exp: "একটি সম্পূর্ণ ফুলে পুষ্পাক্ষের ওপর মোট চারটি স্তবক— বৃতি, দলমণ্ডল, পুংস্তবক এবং স্ত্রীস্তবক পরপর সজ্জিত থাকে।" },
-      { q: "২. জবা ফুলের গর্ভপত্রগুলি পরস্পরের সাথে যুক্ত থাকে। এই ধরনের গর্ভকেশরকে কী বলে?", opts: ["অ্যাপোকার্পাস", "সিনকার্পাস", "ডাইডেলফাস", "পলিডেলফাস"], ans: 1, exp: "ফুলের গর্ভপত্রগুলি যখন পরস্পরের সঙ্গে যুক্ত বা সংলগ্ন অবস্থায় থাকে তখন তাকে সিনকার্পাস গর্ভকেশর বলে, যেমন— জবা ফুল।" },
-      { q: "৩. একটি মাইক্রোস্পোর মাতৃকোশ (PMC) মিয়োসিস প্রক্রিয়ায় বিভাজিত হয়ে কয়টি পরাগরেণু উৎপন্ন করে?", opts: ["২টি", "৪টি", "৮টি", "১৬টি"], ans: 1, exp: "ডিপ্লয়েড রেণু মাতৃকোশ মিয়োসিস বিভাজনের মাধ্যমে চারটি হ্যাপ্লয়েড পরাগরেণু উৎপন্ন করে, যা একসাথে একটি গুচ্ছ বা রেণুচতুষ্টয় (Tetrad) গঠন করে।" },
-      { q: "৪. মটর বা অপরাজিতা ফুলে পুংদণ্ডগুলি দুটি গুচ্ছে অবস্থান করে। এই অবস্থাকে কী বলে?", opts: ["মোনোডেলফাস", "পলিডেলফাস", "ডাইডেলফাস", "সাইন্যানড্রাস"], ans: 2, exp: "পুংকেশরের পুংদণ্ডগুলি যখন দুটি গুচ্ছে বিভক্ত হয়ে অবস্থান করে, তখন তাকে দ্বিগুণ বা ডাইডেলফাস পুংকেশর বলে।" },
-      { q: "৫. নিম্নলিখিত কোন্ ফুলে ট্রান্সলেটর (Translator) দেখা যায়?", opts: ["জবা", "আকন্দ", "সরিষা", "সূর্যমুখী"], ans: 1, exp: "আকন্দ ফুলে পরাগরেণুগুলি একত্রিত হয়ে পলিনিয়াম গঠন করে, যা ট্রান্সলেটর নামক একটি গঠনের মাধ্যমে পতঙ্গের পায়ে আটকে স্থানান্তরিত হয়।" },
-      { q: "৬. পরাগরেণুর অন্তঃপ্রাচীর (Intine) কী দিয়ে গঠিত?", opts: ["পেকটিন ও সেলুলোজ", "ক্যালোজ", "সুবেরিন", "কাইটিন"], ans: 0, exp: "পরাগরেণুর পাতলা ও মসৃণ অন্তঃপ্রাচীর বা ইনটাইন সাধারণত পেকটিন এবং সেলুলোজ দিয়ে গঠিত হয়।" },
-      { q: "৭. সরিষা ফুলে ৬টি পুংকেশরের মধ্যে ৪টি বড়ো এবং ২টি ছোটো হয়। এই পুংকেশরকে কী বলে?", opts: ["ডিডিনেমাস", "টেট্রাডিনেমাস", "সাইন্যানড্রাস", "সিনজেনেশিয়াস"], ans: 1, exp: "যখন ৬টি পুংকেশরের মধ্যে ৪টি দীর্ঘ এবং ২টি খর্বাকৃতির হয়, তখন সেই অবস্থাকে দীর্ঘচতুষ্টয়ী বা টেট্রাডিনেমাস পুংকেশর বলে।" },
-      { q: "৮. মটর ও ছোলা গাছে কী প্রকৃতির ডিম্বক দেখা যায়?", opts: ["অর্থোট্রোপাস", "অ্যানাট্রোপাস", "অ্যামফিট্রোপাস", "ক্যাম্পাইলোট্রোপাস"], ans: 1, exp: "মটর ও ছোলা গাছে অ্যানাট্রোপাস বা অধোমুখ ডিম্বক দেখা যায়। এটি উল্টানো প্রকৃতির।" },
-      { q: "৯. পলিগোনাম (Polygonum) প্রকৃতির একটি আদর্শ ভ্রূণস্থলীতে কয়টি নিউক্লিয়াস থাকে?", opts: ["৪টি", "৬টি", "৮টি", "১২টি"], ans: 2, exp: "অধিকাংশ গুপ্তবীজী উদ্ভিদে মেগাস্পোর থেকে মাইটোসিস বিভাজনের মাধ্যমে যে ভ্রূণস্থলী গঠিত হয় তাতে ৮টি নিউক্লিয়াস থাকে।" },
-      { q: "১০. ডিম্বকের যে অংশ থেকে ডিম্বক ত্বক (Integument) উৎপন্ন হয়, তাকে কী বলে?", opts: ["ডিম্বক নাভি", "ডিম্বক রন্ধ্র", "ডিম্বক মূল (Chalaza)", "ডিম্বক বৃন্ত"], ans: 2, exp: "ডিম্বকের গোড়ার দিকের যে অংশ থেকে ডিম্বক ত্বকগুলির উৎপত্তি ঘটে, তাকে ডিম্বক মূল বা চ্যালাজা বলে।" },
-      { q: "১১. একই গাছের দুটি আলাদা ফুলের মধ্যে পরাগ আদান-প্রদান হওয়াকে কী বলে?", opts: ["জেনোগ্যামি", "গেইটোনোগ্যামি", "অটোগ্যামি", "সিনগ্যামি"], ans: 1, exp: "একটি গাছের একটি ফুলের পরাগরেণু যখন সেই গাছেরই অপর একটি ফুলের গর্ভমুণ্ডে স্থানান্তরিত হয়, তখন তাকে গেইটোনোগ্যামি বলে।" },
-      { q: "১২. বাদুড়ের সাহায্যে সম্পন্ন হওয়া পরাগযোগকে কী বলা হয়?", opts: ["এন্টোমোফিলি", "অরনিথোফিলি", "কাইরোপ্টেরোফিলি", "ম্যালাকোফিলি"], ans: 2, exp: "বাহক হিসেবে বাদুড়ের সাহায্যে যে পরাগযোগ সম্পন্ন হয় তাকে কাইরোপ্টেরোফিলি বলে।" },
-      { q: "১৩. ধান, গম, ভুট্টা প্রভৃতি গাছে কার সাহায্যে পরাগযোগ ঘটে?", opts: ["জল", "বায়ু (অ্যানিমোফিলি)", "পতঙ্গ", "পাখি"], ans: 1, exp: "ধান, গম ও ভুট্টার ফুলগুলি সাধারণত ক্ষুদ্র, অনুজ্জ্বল ও গন্ধহীন হয় এবং এদের হালকা পরাগরেণু বাতাসের মাধ্যমে উড়ে গিয়ে পরাগযোগ ঘটায়।" },
-      { q: "১৪. একই প্রজাতির দুটি সম্পূর্ণ ভিন্ন গাছের ফুলের মধ্যে পরাগযোগকে কী বলে?", opts: ["গেইটোনোগ্যামি", "জেনোগ্যামি (Xenogamy)", "হোমোগ্যামি", "ক্লিস্টোগ্যামি"], ans: 1, exp: "ইতর পরাগযোগ বা জেনোগ্যামিতে একই প্রজাতির সম্পূর্ণ আলাদা দুটি উদ্ভিদের ফুলের মধ্যে পরাগ আদান-প্রদান ঘটে।" },
-      { q: "১৫. পাতাশ্যাওলা ও হাইড্রিলা উদ্ভিদে কোন্ ধরনের পরাগযোগ দেখা যায়?", opts: ["এন্টোমোফিলি", "হাইড্রোফিলি", "অরনিথোফিলি", "অ্যানিমোফিলি"], ans: 1, exp: "পাতাশ্যাওলা বা ঝাঁঝির মতো জলজ উদ্ভিদে জলের মাধ্যমে পরাগযোগ ঘটে, তাই এদের জলপরাগী বা হাইড্রোফিলি উদ্ভিদ বলা হয়।" }
-    ]
-  },
-  2: {
-    subject: 'পদার্থবিদ্যা (Physics)', icon: '🔭', topic: 'পরিবেশের জন্য ভাবনা ও বায়ুমণ্ডল',
-    questions: [
-      { q: "১. বায়ুমণ্ডলের কোন্ স্তরে আবহাওয়ার সমস্ত ঘটনা (যেমন ঝড়, বৃষ্টি) ঘটে?", opts: ["স্ট্র্যাটোস্ফিয়ার", "মেসোস্ফিয়ার", "ট্রপোস্ফিয়ার", "আয়নোস্ফিয়ার"], ans: 2, exp: "ট্রপোস্ফিয়ার স্তরে ধূলিকণা ও জলীয় বাষ্প থাকায় ঝড়, বৃষ্টি, বজ্রপাত ইত্যাদি আবহাওয়ার যাবতীয় ঘটনা ঘটে।" },
-      { q: "২. বায়ুমণ্ডলের কোন্ স্তরকে 'শান্তমণ্ডল' বলা হয়?", opts: ["ট্রপোস্ফিয়ার", "স্ট্র্যাটোস্ফিয়ার", "মেসোস্ফিয়ার", "এক্সোস্ফিয়ার"], ans: 1, exp: "স্ট্র্যাটোস্ফিয়ার স্তরে ধূলিকণা ও জলীয় বাষ্প না থাকায় ঝড়, বৃষ্টি ইত্যাদি প্রাকৃতিক ঘটনা ঘটে না।" },
-      { q: "৩. ওজোন স্তর (Ozone layer) বায়ুমণ্ডলের কোন্ স্তরে অবস্থিত?", opts: ["ট্রপোস্ফিয়ার", "থার্মোস্ফিয়ার", "স্ট্র্যাটোস্ফিয়ার", "মেসোস্ফিয়ার"], ans: 2, exp: "স্ট্র্যাটোস্ফিয়ারের ২০ থেকে ৩০ কিমি উচ্চতার মধ্যে ওজোন গ্যাসের স্তর বা ওজোন স্তর অবস্থিত।" },
-      { q: "৪. বায়ুমণ্ডলের কোন্ স্তর বেতার তরঙ্গ প্রতিফলিত করে?", opts: ["মেসোস্ফিয়ার", "আয়নোস্ফিয়ার / থার্মোস্ফিয়ার", "ট্রপোস্ফিয়ার", "স্ট্র্যাটোস্ফিয়ার"], ans: 1, exp: "থার্মোস্ফিয়ার স্তরের গ্যাসীয় অণুগুলি সূর্যরশ্মির দ্বারা আয়নিত অবস্থায় থাকে বলে একে আয়নোস্ফিয়ারও বলা হয়। এটি বেতার তরঙ্গ প্রতিফলিত করে।" },
-      { q: "৫. ট্রপোস্ফিয়ারে উচ্চতা বৃদ্ধির সঙ্গে সঙ্গে উষ্ণতা কী হয়?", opts: ["বৃদ্ধি পায়", "অপরিবর্তিত থাকে", "হ্রাস পায়", "প্রথমে বৃদ্ধি ও পরে হ্রাস পায়"], ans: 2, exp: "ট্রপোস্ফিয়ারে প্রতি ১ কিলোমিটার উচ্চতা বৃদ্ধিতে উষ্ণতা ৬.৫ °C হারে হ্রাস পায়। একে ল্যাপ্স রেট বলা হয়।" },
-      { q: "৬. বায়ুমণ্ডলে নাইট্রোজেনের শতকরা পরিমাণ কত?", opts: ["২১.০১%", "৭৮.০৮%", "০.০৩%", "০.৯৩%"], ans: 1, exp: "বায়ুমণ্ডলে সবচেয়ে বেশি পরিমাণে থাকা গ্যাসটি হলো নাইট্রোজেন, যার পরিমাণ প্রায় ৭৮.০৮%।" },
-      { q: "৭. প্রধান গ্রিনহাউস গ্যাস কোনটি?", opts: ["কার্বন ডাই-অক্সাইড (CO2)", "মিথেন (CH4)", "নাইট্রাস অক্সাইড (N2O)", "ক্লোরোফ্লুরো কার্বন (CFC)"], ans: 0, exp: "বিশ্ব উষ্ণায়নের জন্য প্রধানত দায়ী গ্রিনহাউস গ্যাসটি হলো কার্বন ডাই-অক্সাইড।" },
-      { q: "৮. ফ্রিজ বা রেফ্রিজারেটর থেকে কোন্ ক্ষতিকারক গ্যাস নির্গত হয় যা ওজোন স্তর ধ্বংস করে?", opts: ["কার্বন ডাই-অক্সাইড", "ক্লোরোফ্লুরো কার্বন (CFC)", "মিথেন", "হাইড্রোজেন"], ans: 1, exp: "এসি বা রেফ্রিজারেটর থেকে নির্গত CFC গ্যাস ওজোন স্তর ধ্বংস করার জন্য প্রবলভাবে দায়ী।" },
-      { q: "৯. ওজোন স্তর ধ্বংসে অনুঘটকের কাজ করে কোন্ পরমাণু?", opts: ["অক্সিজেন", "হাইড্রোজেন", "সক্রিয় ক্লোরিন পরমাণু (Cl)", "নাইট্রোজেন"], ans: 2, exp: "CFC থেকে উৎপন্ন সক্রিয় ক্লোরিন পরমাণু (Cl) ওজোন গ্যাসের সাথে বিক্রিয়া করে তাকে ভেঙে দেয় এবং অনুঘটকের কাজ করে।" },
-      { q: "১০. ওজোন গর্ত (Ozone hole) প্রথম কোথায় আবিষ্কৃত হয়?", opts: ["আফ্রিকার ওপরে", "আন্টার্কটিকার ওপরে", "ইউরোপের ওপরে", "এশিয়ার ওপরে"], ans: 1, exp: "বিজ্ঞানীদের মতে, আন্টার্কটিকা মহাদেশের ওপর বায়ুমণ্ডলের ওজোন স্তর সবচেয়ে বেশি পাতলা হয়ে গেছে, যাকে ওজোন গর্ত বা Ozone hole বলা হয়।" },
-      { q: "১১. মন্ট্রিল প্রোটোকল (Montreal Protocol) কোন্ উদ্দেশ্যে স্বাক্ষরিত হয়েছিল?", opts: ["ওজোন স্তর ধ্বংসকারী পদার্থের ব্যবহার কমানো", "জঙ্গলের সংরক্ষণ", "পরমাণু অস্ত্র কমানো", "বাণিজ্য চুক্তি"], ans: 0, exp: "ওজোন স্তর রক্ষার্থে CFC-র মতো ওজোন স্তর ধ্বংসকারী পদার্থের উৎপাদন ও ব্যবহার কমানোর জন্য ১৯৮৭ সালে মন্ট্রিল প্রোটোকল স্বাক্ষরিত হয়।" },
-      { q: "১২. প্রাকৃতিক গ্যাসের প্রধান উপাদান কী?", opts: ["বিউটেন", "প্রোপেন", "মিথেন", "ইথেন"], ans: 2, exp: "প্রাকৃতিক গ্যাস বা Natural gas-এর প্রধান উপাদান হলো মিথেন, যা প্রায় ৭০% থেকে ৯০% পর্যন্ত থাকে।" },
-      { q: "১৩. বায়োগ্যাসের প্রধান উপাদান কী?", opts: ["হাইড্রোজেন", "মিথেন", "কার্বন ডাই-অক্সাইড", "অ্যামোনিয়া"], ans: 1, exp: "গোবর ও অন্যান্য জৈব পদার্থ পচিয়ে তৈরি বায়োগ্যাসের প্রধান উপাদান হলো মিথেন (প্রায় ৬০-৭০%)।" },
-      { q: "১৪. সৌরকোশে (Solar cell) কোন্ শক্তি কোন্ শক্তিতে রূপান্তরিত হয়?", opts: ["তাপ শক্তি যান্ত্রিক শক্তিতে", "আলোক শক্তি তড়িৎ শক্তিতে", "তড়িৎ শক্তি আলোক শক্তিতে", "রাসায়নিক শক্তি তড়িৎ শক্তিতে"], ans: 1, exp: "সৌরকোশ বা সোলার প্যানেলে সরাসরি সূর্যের আলোক শক্তিকে কাজে লাগিয়ে তা থেকে তড়িৎ শক্তি উৎপাদন করা হয়।" },
-      { q: "১৫. মিথেন হাইড্রেট কোথায় প্রচুর পরিমাণে পাওয়া যায়?", opts: ["মরুভূমিতে", "পাহাড়ের চূড়ায়", "সমুদ্রের তলদেশে পাললিক শিলাস্তরে", "আগ্নেয়গিরিতে"], ans: 2, exp: "সমুদ্রের তলদেশে, মহীসোপান অঞ্চলে নিম্ন তাপমাত্রা এবং উচ্চ চাপে মিথেন হাইড্রেট বরফাকারে সঞ্চিত থাকে, যাকে 'ফায়ার আইস'ও বলা হয়।" }
-    ]
-  },
-  3: {
-    subject: 'রসায়ন (Chemistry)', icon: '🧪', topic: 'দ্রবণ এবং কোলয়েড',
-    questions: [
-      { q: "১. গাঢ়ত্ব প্রকাশের কোন এককটি উষ্ণতার ওপর নির্ভরশীল নয়?", opts: ["মোলারিটি", "নরম্যালিটি", "মোলালিটি", "ফরম্যালিটি"], ans: 2, exp: "দ্রবণের মোলালিটি দ্রাবকের ভর এবং দ্রাবের মোল সংখ্যার ওপর নির্ভর করে। উষ্ণতার পরিবর্তনে ভরের পরিবর্তন হয় না, তাই এটি উষ্ণতা-নিরপেক্ষ।" },
-      { q: "২. রাউল্টের সূত্র থেকে ধনাত্মক বিচ্যুতি প্রদর্শনকারী তরল-জোড়ের মিশ্রণ কী ধরনের অ্যাজিওট্রোপ গঠন করে?", opts: ["সর্বোচ্চ স্ফুটনাঙ্কের", "সর্বনিম্ন স্ফুটনাঙ্কের", "উভয়ই", "কোনোটিই নয়"], ans: 1, exp: "ধনাত্মক বিচ্যুতি দেখানো মিশ্রণের একটি নির্দিষ্ট সংযুতিতে বাষ্পচাপ সর্বোচ্চ হয়, তাই স্ফুটনাঙ্ক সর্বনিম্ন হয়।" },
-      { q: "৩. হেনরি ধ্রুবকের (K_H) একক কী (যখন p=K_Hx সমীকরণ ব্যবহৃত হয়)?", opts: ["atm", "mol/L/atm", "atm^-1", "কোনো একক নেই"], ans: 0, exp: "মোল-ভগ্নাংশ (x) এককবিহীন হওয়ায় K_H-এর একক সর্বদা চাপের এককের (atm বা bar) সমান হয়।" },
-      { q: "৪. নীচের কোনটি দ্রবণের কলিগেটিভ বা সংখ্যাগত ধর্ম নয়?", opts: ["বাষ্পচাপের আপেক্ষিক অবনমন", "স্ফুটনাঙ্কের উন্নয়ন", "বাষ্পচাপের অবনমন", "হিমাঙ্কের অবনমন"], ans: 2, exp: "বাষ্পচাপের অবনমন (p^0 - p) দ্রাবকের প্রকৃতির ওপরও নির্ভর করে বলে এটি সংখ্যাগত ধর্ম নয়।" },
-      { q: "৫. দুটি দ্রবণ আইসোটোনিক এবং সমাসিসারক হলে তাদের কোনটি সমান হয়?", opts: ["মোলার গাঢ়ত্ব", "মোলাল গাঢ়ত্ব", "নরম্যালিটি", "ঘনত্ব"], ans: 0, exp: "আইসোটোনিক দ্রবণের অভিস্রবণ চাপ সমান হয় (π1 = π2)। ভ্যান্ট হফের সমীকরণ অনুসারে নির্দিষ্ট উষ্ণতায় এদের মোলার গাঢ়ত্বও সমান হয়।" },
-      { q: "৬. লঘু জলীয় দ্রবণে K4[Fe(CN)6] সম্পূর্ণ বিয়োজিত হলে এর ভ্যান্ট হফ গুণক (i)-এর মান কত হবে?", opts: ["3", "4", "5", "6"], ans: 2, exp: "প্রতি সংকেত একক থেকে 4টি K+ এবং 1টি [Fe(CN)6]4- আয়ন উৎপন্ন হয়। মোট উৎপন্ন আয়নের সংখ্যা 5 হওয়ায় i = 5।" },
-      { q: "৭. একটি আদর্শ দ্রবণের ক্ষেত্রে নীচের কোনটি সঠিক?", opts: ["ΔH_mix > 0", "ΔV_mix < 0", "ΔH_mix = 0, ΔV_mix = 0", "ΔS_mix = 0"], ans: 2, exp: "আদর্শ দ্রবণ প্রস্তুতিতে তাপের শোষণ বা উদ্ভব হয় না (ΔH = 0) এবং মোট আয়তনেরও কোনো পরিবর্তন হয় না (ΔV = 0)।" },
-      { q: "৮. অন্ধকার ঘরে কোলয়েড দ্রবণের মধ্য দিয়ে আলোকরশ্মি পাঠালে আলোর গতিপথ দৃশ্যমান হয়। এই ঘটনাকে কী বলে?", opts: ["ব্রাউনীয় গতি", "টিন্ডাল প্রভাব", "তড়িৎ-অভিস্রবণ", "পেপটাইজেশন"], ans: 1, exp: "কোলয়েড কণা দ্বারা আলোর বিক্ষেপণের ফলে গতিপথ দৃশ্যমান হওয়ার ঘটনাটিকে টিন্ডাল প্রভাব (Tyndall effect) বলে।" },
-      { q: "৯. ধনাত্মক আধানগ্রস্ত Fe(OH)3 সলের তঞ্চনে নীচের কোন আয়নের তঞ্চন ক্ষমতা সবচেয়ে বেশি?", opts: ["Cl-", "SO4^2-", "PO4^3-", "[Fe(CN)6]^4-"], ans: 3, exp: "শুলজে-হার্ডি নিয়ম অনুযায়ী বিপরীত আয়নের আধান যত বেশি হয়, তঞ্চন ক্ষমতা তত বেশি হয়। [Fe(CN)6]^4- এর আধান (-4) সর্বাধিক।" },
-      { q: "১০. দুটি সংরক্ষক কোলয়েড X এবং Y-এর স্বর্ণসংখ্যা যথাক্রমে 0.01 এবং 0.1। এদের মধ্যে কোনটির সংরক্ষণ ক্ষমতা বেশি?", opts: ["X-এর", "Y-এর", "উভয়ের সমান", "বলা সম্ভব নয়"], ans: 0, exp: "সংরক্ষক কোলয়েডের স্বর্ণসংখ্যা যত কম হয়, তার সংরক্ষণ ক্ষমতাও তত বেশি হয়।" },
-      { q: "১১. বিশুদ্ধ দ্রাবকে অনুদ্বায়ী দ্রাব যোগ করলে দ্রবণের বাষ্পচাপের কী পরিবর্তন হয়?", opts: ["বৃদ্ধি পায়", "হ্রাস পায়", "একই থাকে", "প্রথমে বাড়ে, পরে কমে"], ans: 1, exp: "দ্রবণের পৃষ্ঠতলে দ্রাবক ও দ্রাব উভয়ের অণু থাকায় বাষ্পায়নের হার কমে গিয়ে বাষ্পচাপ হ্রাস পায়।" },
-      { q: "১২. দুধ কোন ধরনের কোলয়ডীয় সিস্টেমের উদাহরণ?", opts: ["সল", "জেল", "ইমালসন", "ফোম"], ans: 2, exp: "দুধে তরল চর্বির সূক্ষ্ম কণা জলের মধ্যে বিস্তৃত থাকে, তাই এটি জলে-তেল জাতীয় ইমালসন।" },
-      { q: "১৩. শীতপ্রধান দেশে গাড়ির রেডিয়েটরের জলকে জমে যাওয়া থেকে রক্ষা করতে হিমাঙ্ক-রোধক হিসেবে কী ব্যবহৃত হয়?", opts: ["গ্লিসারল", "ইথিলিন গ্লাইকল", "মিথানল", "ইথানল"], ans: 1, exp: "জলের জমে যাওয়াকে প্রতিরোধ করার জন্য জলের সঙ্গে হিমাঙ্ক-রোধক হিসেবে ইথিলিন গ্লাইকল ব্যবহৃত হয়।" },
-      { q: "১৪. স্ফুটনাঙ্কের মোলাল উন্নয়ন ধ্রুবকের (Kb) একক কী?", opts: ["K·mol·kg^-1", "K·kg·mol^-1", "K·kg^-1·mol", "K·g·mol^-1"], ans: 1, exp: "Kb = ΔTb / m। মোলালিটির একক mol/kg হওয়ায় Kb এর একক হয় K·kg·mol^-1।" },
-      { q: "১৫. সাবানের জলীয় দ্রবণে যে নির্দিষ্ট গাঢ়ত্বের ঊর্ধ্বে অণু বা আয়ন জোটবদ্ধ হয়ে মিসেল (micelle) গঠিত হয়, তাকে কী বলে?", opts: ["ক্রাফট উষ্ণতা", "ফ্লোকুলেশন মান", "সংকট মিসেলীকরণ গাঢ়ত্ব (CMC)", "সমতড়িৎ বিন্দু"], ans: 2, exp: "যে সর্বনিম্ন গাঢ়ত্বের ঊর্ধ্বে পৃষ্ঠতল-সক্রিয় পদার্থের আয়নগুলো জোটবদ্ধ হয়ে মিসেল গঠন করে, তাকে সংকট মিসেলীকরণ গাঢ়ত্ব বা CMC বলা হয়।" }
-    ]
-  },
-  4: {
-    subject: 'গণিত (Mathematics)', icon: '📐', topic: 'নির্ণায়ক (Determinants)',
-    questions: [
-      { q: "১. একটি 3x3 নির্ণায়কের প্রথম এবং দ্বিতীয় স্তম্ভ সম্পূর্ণ অভিন্ন হলে এর মান কত হবে?", opts: ["a²b", "ab²", "0", "1"], ans: 2, exp: "নির্ণায়কের ধর্ম অনুযায়ী, কোনো নির্ণায়কের যেকোনো দুটি সারি বা স্তম্ভ সম্পূর্ণ অভিন্ন (identical) হলে তার মান 0 হয়।" },
-      { q: "২. [x₁(y₂-y₃) + x₂(y₃-y₁) + x₃(y₁-y₂)] রাশিটিকে একটি তৃতীয় ক্রমের নির্ণায়কের আকারে লিখলে তা কেমন হবে?", opts: ["|x1 -y1 1|...", "|x1 y1 1|...", "|x1 -y1 1|...", "এদের কোনোটিই নয়"], ans: 1, exp: "নির্ণায়ক |x1 y1 1; x2 y2 1; x3 y3 1| কে বিস্তৃত করলেই ওই রাশিটি পাওয়া যায়।" },
-      { q: "৩. কোনো নির্ণায়কের একটি স্তম্ভের পদগুলির সঙ্গে অন্য স্তম্ভের অনুরূপ পদগুলির সহ-উৎপাদকের গুণফলের সমষ্টি সর্বদা কত হয়?", opts: ["1", "0", "a₁a₂a₃", "-1"], ans: 1, exp: "নির্ণায়কের মৌলিক ধর্ম অনুযায়ী, একটি সারি/স্তম্ভের পদ ও অন্য সারি/স্তম্ভের সহ-উৎপাদকের গুণফলের সমষ্টি সর্বদা 0 হয়।" },
-      { q: "৪. |3 x; x 1| = |3 2; 4 1| হলে, x-এর মান কত?", opts: ["± 2√2", "± 2√5", "± √3", "± 2"], ans: 0, exp: "বামপক্ষ = 3-x², ডানপক্ষ = 3-8 = -5। শর্তানুযায়ী 3-x² = -5 => x² = 8 => x = ± 2√2।" },
-      { q: "৫. |-1 1 1; 2 -2 2; 3 3 -3| -এর মান কত হবে?", opts: ["0", "15", "24", "-4"], ans: 2, exp: "সাধারণ উৎপাদক 2 এবং 3 বাইরে আনলে নির্ণায়কের মান 6 × 4 = 24 দাঁড়ায়।" },
-      { q: "৬. |2 4; 5 1| = |2x 4; 6 x| হলে, x-এর মান কত?", opts: ["± √2", "± √5", "± √3", "± √7"], ans: 2, exp: "বামপক্ষ = -18, ডানপক্ষ = 2x² - 24। শর্তানুসারে, 2x² - 24 = -18 => 2x² = 6 => x² = 3 => x = ± √3।" },
-      { q: "৭. |cos 15° sin 15°; sin 75° cos 75°| -এর মান কত হবে?", opts: ["1", "0", "1/2", "√3"], ans: 1, exp: "বিস্তার করলে cos 15°cos 75° - sin 15°sin 75° = cos(15°+75°) = cos 90° = 0।" },
-      { q: "৮. |13 16 19; 14 17 20; 15 18 21| -এর মান কত?", opts: ["0", "15", "30", "24"], ans: 0, exp: "কলাম অপারেশন C2' = C2 - C1 এবং C3' = C3 - C2 প্রয়োগ করলে দুটি স্তম্ভ অভিন্ন (3, 3, 3) হয়ে যায়, তাই মান 0।" },
-      { q: "৯. একটি ৩x৩ ক্রমের বিপ্রতিসম (skew-symmetric) ম্যাট্রিক্সের নির্ণায়কের মান সর্বদা কত হয়?", opts: ["cos α", "sin α", "0", "1"], ans: 2, exp: "যেকোনো অযুগ্ম ক্রমের (odd order) বিপ্রতিসম ম্যাট্রিক্সের নির্ণায়কের মান সর্বদা 0 হয়।" },
-      { q: "১০. |1 -3 2; 4 -1 2; 2 5 7| নির্ণায়কটিতে a_32 পদের সহ-উৎপাদক (cofactor) কত হবে?", opts: ["-6", "4", "6", "12"], ans: 2, exp: "A_32 = (-1)^(3+2) × M_32 = (-1) × ((1×2) - (4×2)) = -1 × (2-8) = -1 × -6 = 6।" },
-      { q: "১১. কোনো নির্ণায়কের যেকোনো দুটি সারি বা স্তম্ভ সম্পূর্ণ অভিন্ন (identical) হলে নির্ণায়কটির মান কত হয়?", opts: ["1", "0", "-1", "অনির্ণেয়"], ans: 1, exp: "নির্ণায়কের মৌলিক ধর্ম অনুসারে, কোনো নির্ণায়কের দুটি সারি বা দুটি স্তম্ভ হুবহু একই হলে, মান সর্বদা শূন্য (০) হয়।" },
-      { q: "১২. A একটি 3x3 ক্রমের বর্গ ম্যাট্রিক্স হলে, |kA| এর মান কত হবে (যেখানে k একটি ধ্রুবক স্কেলার)?", opts: ["k|A|", "k²|A|", "k³|A|", "3k|A|"], ans: 2, exp: "A একটি n×n ক্রমের বর্গ ম্যাট্রিক্স হলে, |kA| = k^n|A|। যেহেতু n=3, তাই নির্ণায়কের মান হবে k³|A|।" },
-      { q: "১৩. |a+ib c+id; -c+id a-ib| = a² + b² + c² + d² (যেখানে i² = -1)। এই বিবৃতিটি কি সত্য?", opts: ["সত্য", "মিথ্যা", "তথ্য অসম্পূর্ণ", "বলা সম্ভব নয়"], ans: 0, exp: "বিস্তার করলে: (a² - i²b²) - (-c² + i²d²) = a² + b² + c² + d²। তাই বিবৃতিটি সত্য।" },
-      { q: "১৪. x/(y+z)=a, y/(z+x)=b এবং z/(x+y)=c সমীকরণগুলি থেকে x, y, z অপনয়ন করলে কোন সম্পর্কটি পাওয়া যাবে?", opts: ["ab+bc+ca=1", "2abc+bc+ca+ab=1", "ab+bc+ca=2abc", "এদের কোনোটিই নয়"], ans: 1, exp: "সহগ নির্ণায়কের মান 0 ধরে বিস্তৃত করলে 2abc + ab + bc + ca = 1 পাওয়া যায়।" },
-      { q: "১৫. একক ম্যাট্রিক্সের (Identity Matrix) নির্ণায়কের মান সর্বদা কত হয়?", opts: ["0", "1", "-1", "ক্রমের ওপর নির্ভরশীল"], ans: 1, exp: "যেকোনো ক্রমের একক ম্যাট্রিক্সের প্রধান কর্ণের প্রতিটি পদ 1 এবং অন্যান্য সব পদ 0 হয়। তাই এর নির্ণায়কের মান সর্বদা 1 থাকে।" }
-    ]
-  }
+// =========================================================================
+// গ্লোবাল স্টুডেন্ট ডেটাবেস (GLOBAL STUDENT DATABASE)
+// =========================================================================
+const GLOBAL_USERS = {
+    // আপনার প্রয়োজনমতো এখানে ইউজারনেম ও পাসওয়ার্ড অ্যাড করতে পারবেন
+    "demo1": "1234",
+    "demo2": "1234",
+    "demo3": "1234",
+    "student100": "pass001",
+    "rohit2027": "abc456",
+    "ajay": "7251",
+    "sagun": "1234",
+    "anita": "1234"
 };
 
-// ============================================================
-// মূল লজিক (সরাসরি টেস্ট শুরু)
-// ============================================================
-
-function initHub() {
-  const grid = document.getElementById('setGrid');
-  grid.innerHTML = '';
-  
-  Object.keys(allSets).forEach(setId => {
-    const set = allSets[setId];
-    const card = document.createElement('div');
-    card.className = 'set-card';
-    
-    card.innerHTML = `
-      <div class="free-badge">FREE DEMO FULL</div>
-      <div class="icon">${set.icon}</div>
-      <div class="set-num">${set.subject}</div>
-      <div class="set-title">${set.topic}</div>
-      <div class="set-meta"><span>${set.questions.length} প্রশ্ন</span><span>১৫ মিনিট</span></div>
-    `;
-    
-    card.onclick = () => startQuiz(setId);
-    grid.appendChild(card);
-  });
-}
-
-function startQuiz(setId) {
-  currentSetId = setId;
-  TOTAL_QS = allSets[setId].questions.length;
-  
-  cur = 0; score = 0; wrong = 0; answered = false; userAnswers = [];
-  timeLeft = TIME_LIMIT;
-  isReviewMode = false;
-
-  document.getElementById('hubPage').classList.add('hidden');
-  document.getElementById('resultWrap').classList.remove('show');
-  document.getElementById('testArea').classList.remove('hidden');
-  document.getElementById('timerBox').classList.remove('hidden');
-  
-  const set = allSets[setId];
-  document.getElementById('testSetName').innerText = set.subject;
-  document.getElementById('testSetLabel').innerText = 'Demo Set';
-  document.getElementById('testTopic').innerText = set.topic;
-  
-  startTimer();
-  loadQuestion();
-}
-
-function startTimer() {
-  clearInterval(timerInterval);
-  updateTimerDisplay();
-  timerInterval = setInterval(() => {
-    timeLeft--;
-    updateTimerDisplay();
-    if (timeLeft <= 0) {
-      clearInterval(timerInterval);
-      showResult();
-    }
-  }, 1000);
-}
-
-function updateTimerDisplay() {
-  const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
-  const s = (timeLeft % 60).toString().padStart(2, '0');
-  document.getElementById('timerDisplay').innerText = `${m}:${s}`;
-}
-
-function loadQuestion() {
-  answered = false;
-  const set = allSets[currentSetId];
-  const q = set.questions[cur];
-  
-  document.getElementById('qNum').innerText = isReviewMode ? `Review: প্রশ্ন ${cur + 1} / ${TOTAL_QS}` : `প্রশ্ন ${cur + 1} / ${TOTAL_QS}`;
-  document.getElementById('qText').innerText = q.q;
-  document.getElementById('progressFill').style.width = `${((cur + 1) / TOTAL_QS) * 100}%`;
-  
-  const optsContainer = document.getElementById('qOpts');
-  optsContainer.innerHTML = '';
-  
-  q.opts.forEach((optText, idx) => {
-    const btn = document.createElement('button');
-    btn.className = 'opt';
-    btn.innerHTML = `<div class="opt-circle">${LABELS[idx]}</div> <div class="opt-text">${optText}</div>`;
-    
-    if (isReviewMode) {
-      btn.classList.add('disabled');
-      if (idx === q.ans) btn.classList.add('correct');
-      else if (userAnswers[cur] === idx) btn.classList.add('wrong');
-    } else {
-      btn.onclick = () => selectAnswer(idx, btn);
-    }
-    optsContainer.appendChild(btn);
-  });
-  
-  const nextBtn = document.getElementById('nextBtn');
-  document.getElementById('explanation').classList.remove('show');
-  document.getElementById('scoreShow').innerText = isReviewMode ? "সবুজ = সঠিক উত্তর | লাল = আপনার ভুল উত্তর" : `সঠিক: ${score} | ভুল: ${wrong}`;
-  
-  if (isReviewMode) {
-    document.getElementById('explanationText').innerHTML = q.exp;
-    document.getElementById('explanation').classList.add('show');
-    nextBtn.disabled = false;
-    nextBtn.innerText = cur === set.questions.length - 1 ? 'ফলাফল পেজে ফিরুন' : 'পরবর্তী প্রশ্ন →';
-  } else {
-    nextBtn.disabled = true;
-    nextBtn.innerText = cur === set.questions.length - 1 ? 'ফলাফল দেখো 🏆' : 'পরবর্তী প্রশ্ন →';
-  }
-}
-
-function selectAnswer(selectedIdx, btnElement) {
-  if (answered) return;
-  answered = true;
-  
-  const set = allSets[currentSetId];
-  const q = set.questions[cur];
-  userAnswers[cur] = selectedIdx;
-  
-  const allBtns = document.getElementById('qOpts').children;
-  for (let i = 0; i < allBtns.length; i++) {
-    allBtns[i].classList.add('disabled');
-    if (i === q.ans) allBtns[i].classList.add('correct');
-  }
-  
-  if (selectedIdx === q.ans) {
-    score++;
-  } else {
-    btnElement.classList.add('wrong');
-    wrong++;
-  }
-  
-  document.getElementById('scoreShow').innerText = `সঠিক: ${score} | ভুল: ${wrong}`;
-  document.getElementById('explanationText').innerHTML = q.exp;
-  document.getElementById('explanation').classList.add('show');
-  document.getElementById('nextBtn').disabled = false;
-}
-
-function nextQ() {
-  const set = allSets[currentSetId];
-  if (cur < set.questions.length - 1) {
-    cur++;
-    loadQuestion();
-  } else {
-    if (isReviewMode) {
-      document.getElementById('testArea').classList.add('hidden');
-      document.getElementById('resultWrap').classList.add('show');
-    } else {
-      clearInterval(timerInterval);
-      showResult();
-    }
-  }
-}
-
-function showResult() {
-  document.getElementById('testArea').classList.add('hidden');
-  document.getElementById('timerBox').classList.add('hidden');
-  document.getElementById('resultWrap').classList.add('show');
-  
-  const total = allSets[currentSetId].questions.length;
-  const pct = Math.round((score / total) * 100);
-  
-  document.getElementById('finalScore').innerText = `${pct}%`;
-  document.getElementById('rbCorrect').innerText = score;
-  document.getElementById('rbWrong').innerText = total - score;
-  
-  let msg = "অসাধারণ!"; let icon = "🏆";
-  if (pct < 50) { msg = "আরও অনুশীলন প্রয়োজন!"; icon = "📚"; }
-  else if (pct < 80) { msg = "খুব ভালো চেষ্টা!"; icon = "👍"; }
-  
-  document.getElementById('resultGrade').innerText = msg;
-  document.getElementById('resultIcon').innerText = icon;
-}
-
-function showReview() {
-  document.getElementById('resultWrap').classList.remove('show');
-  document.getElementById('testArea').classList.remove('hidden');
-  isReviewMode = true;
-  cur = 0;
-  loadQuestion();
-}
-
-function goToHub() {
-  document.getElementById('resultWrap').classList.remove('show');
-  document.getElementById('testArea').classList.add('hidden');
-  document.getElementById('timerBox').classList.add('hidden');
-  document.getElementById('hubPage').classList.remove('hidden');
-  initHub();
-}
-
-window.onload = initHub;
+// ডেটাবেস লোকাল স্টোরেজে সেভ করার জন্য
+localStorage.setItem("testBazarGlobalUsers", JSON.stringify(GLOBAL_USERS));
 </script>
 
 </body>
 </html>
 ```
+
+পরবর্তীতে আপনি যখন নির্দিষ্ট বিষয় বা ইউনিটের ক্যুইজ ফাইলগুলো বানাবেন, তখন এই কোডের `href="#"` এর জায়গায় শুধু সেই ক্যুইজ ফাইলের নাম বসিয়ে দিলেই সেগুলো ড্যাশবোর্ড থেকে কাজ করতে শুরু করবে।
