@@ -1,0 +1,731 @@
+আপনার পরিকল্পনাটি একদম নিখুঁত! আমি ঠিক আপনার নির্দেশমতো **Set 1, 2, 4, 5, 16, 17, 18, 19, এবং 20** (মোট ৯টি সেট) দিয়ে একটি সম্পূর্ণ HTML ক্যুইজ অ্যাপ্লিকেশন তৈরি করে দিচ্ছি। আপনি যেমনটা চেয়েছেন, **প্রতিটি সেটে ঠিক ১৫টি করেই প্রশ্ন** দেওয়া হয়েছে। 
+
+এই ক্যুইজ ফাইলটি আপনার মেইন ড্যাশবোর্ডের ইনডেক্স ফোল্ডারের সাথে সরাসরি লিঙ্কড থাকবে, যার ফলে **`testBazarGlobalUsers`** ডাটাবেস থেকে ইউজারনেম এবং পাসওয়ার্ড কন্ট্রোল নিখুঁতভাবে কাজ করবে। রাসায়নিক সমীকরণগুলো যাতে সুন্দরভাবে দেখা যায়, তাই এতে MathJax-এর লেটেস্ট কনফিগারেশনও যুক্ত করা হয়েছে।
+
+নিচের সম্পূর্ণ কোডটি কপি করে **Chemistry_Unit2_SpecialQuiz.html** নামে সেভ করে নিন:
+
+```html
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Bazar — Chemistry 3rd Sem | Unit 2</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tiro+Bangla&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- MathJax for rendering chemical formulas -->
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']]
+        }
+      };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        /* ================= COLOR SCHEME & VARIABLES ================= */
+        :root {
+            --primary: #1a7a4a;
+            --primary-hover: #2aad68;
+            --accent: #f9a825;
+            --bg-main: #f0faf4;
+            --bg-card: #ffffff;
+            --bg-correct: #e8f7ef;
+            --bg-wrong: #fdf0f0;
+            --text-main: #1c2e24;
+            --text-meta: #5a7a66;
+            --text-exp: #2c4035;
+            --alert-danger: #dc3545;
+            --alert-warning: #e8730a;
+            --border-color: #c5dccb;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Syne', sans-serif; background: var(--bg-main); min-height: 100vh; color: var(--text-main); }
+        .en-font { font-family: 'Syne', sans-serif; }
+
+        /* Top Bar */
+        .top-bar { background: var(--primary); padding: 0.8rem 1.5rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .top-logo { font-size: 1.2rem; font-weight: 800; color: white; cursor: pointer; }
+        .top-logo span { color: var(--accent); }
+        .timer-box { background: rgba(255,255,255,0.2); padding: 0.4rem 1rem; border-radius: 8px; color: white; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+        .timer-box.danger { background: var(--alert-danger); animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+        .user-info { font-size: 0.85rem; font-weight: 700; color: white; background: rgba(0,0,0,0.15); padding: 4px 10px; border-radius: 20px;}
+        .main { max-width: 800px; margin: 0 auto; padding: 1.5rem; }
+
+        /* Hub View */
+        .hub-header { text-align: center; margin-bottom: 2rem; }
+        .hub-header h1 { font-family: 'Tiro Bangla', serif; color: var(--primary); font-size: 1.6rem; margin-bottom: 0.5rem; line-height: 1.4; }
+        .hub-header p { color: var(--text-meta); font-size: 0.95rem; font-family: 'Tiro Bangla', serif;}
+        .set-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
+        .set-card { background: var(--bg-card); border: 2px solid var(--border-color); border-radius: 12px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; }
+        .set-card:hover:not(.locked) { transform: translateY(-3px); border-color: var(--primary); box-shadow: 0 8px 15px rgba(26,122,74,0.1); }
+        .set-card.locked { opacity: 0.6; cursor: not-allowed; border-color: var(--alert-danger); }
+        .set-card .icon { font-size: 2.2rem; margin-bottom: 0.5rem; }
+        .set-card .set-num { font-weight: 700; font-size: 1.1rem; color: var(--primary); }
+        .set-card .set-title { font-family: 'Tiro Bangla', serif; font-size: 0.9rem; color: var(--text-main); margin: 0.3rem 0 0.8rem; line-height: 1.3; height: 35px; display: flex; align-items: center; justify-content: center;}
+        .set-card .set-meta { display: flex; justify-content: center; gap: 1rem; font-size: 0.75rem; color: var(--text-meta); font-weight: bold; }
+        .set-card .set-meta span { background: var(--bg-main); padding: 0.2rem 0.6rem; border-radius: 6px; }
+        .attempt-badge { position: absolute; top: 10px; right: 10px; background: #ffeeba; color: #856404; font-size: 0.75rem; font-weight: bold; padding: 3px 8px; border-radius: 10px; }
+        .attempt-badge.locked-badge { background: var(--alert-danger); color: white; }
+
+        /* Quiz View */
+        .quiz-info { background: white; border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 1.2rem; border: 1px solid var(--border-color); display: flex; gap: 1rem; flex-wrap: wrap; }
+        .info-item { font-family: 'Tiro Bangla', serif; font-size: 0.9rem; color: var(--text-meta); font-weight: 600;}
+        .info-item strong { color: var(--primary); }
+        .progress-wrap { background: var(--border-color); border-radius: 4px; height: 6px; margin-bottom: 1.2rem; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--primary); transition: width 0.3s ease; }
+        .q-card { background: white; border-radius: 14px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .q-num { font-size: 0.85rem; font-weight: 700; color: var(--primary); margin-bottom: 0.8rem; }
+        .q-text { font-family: 'Tiro Bangla', serif; font-size: 1.1rem; color: var(--text-main); font-weight: 700; line-height: 1.6; margin-bottom: 1.2rem; }
+        .opts { display: flex; flex-direction: column; gap: 0.6rem; }
+        .opt { display: flex; align-items: center; gap: 12px; padding: 0.8rem 1rem; border: 1.5px solid var(--border-color); border-radius: 10px; background: transparent; cursor: pointer; text-align: left; transition: all 0.2s; width: 100%; font-family: 'Tiro Bangla', serif; font-size: 0.95rem; font-weight: 600; color: var(--text-main);}
+        .opt:not(.disabled):hover { border-color: var(--primary); background: var(--bg-selected); }
+        .opt-circle { width: 26px; height: 26px; min-width: 26px; border-radius: 50%; border: 1.5px solid var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; font-family: 'Syne', sans-serif; background: white; }
+        .opt.correct { border-color: var(--primary); background: var(--bg-correct); }
+        .opt.correct .opt-circle { background: var(--primary); border-color: var(--primary); color: white; }
+        .opt.wrong { border-color: var(--alert-danger); background: var(--bg-wrong); }
+        .opt.wrong .opt-circle { background: var(--alert-danger); border-color: var(--alert-danger); color: white; }
+        .opt.disabled { cursor: default; }
+        .explanation { background: var(--bg-main); border-left: 4px solid var(--primary); border-radius: 0 8px 8px 0; padding: 1rem; margin-top: 1rem; display: none; }
+        .explanation.show { display: block; }
+        .explanation p { font-family: 'Tiro Bangla', serif; font-size: 0.9rem; color: var(--text-exp); line-height: 1.6; }
+        .nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; }
+        .score-show { font-family: 'Tiro Bangla', serif; font-size: 0.85rem; color: var(--text-meta); font-weight: bold;}
+        .next-btn { background: var(--primary); color: white; border: none; padding: 0.7rem 1.5rem; border-radius: 8px; font-family: 'Tiro Bangla', serif; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: 0.2s; }
+        .next-btn:disabled { background: var(--border-color); cursor: not-allowed; }
+
+        /* Result View */
+        .result-wrap { background: white; border-radius: 14px; padding: 2rem 1.5rem; text-align: center; box-shadow: 0 8px 25px rgba(0,0,0,0.1); max-width: 500px; margin: 0 auto; display: none; }
+        .result-wrap.show { display: block; }
+        .result-icon { font-size: 3.5rem; margin-bottom: 0.5rem; line-height: 1;}
+        .result-score { font-size: 3rem; font-weight: 800; color: var(--primary); line-height: 1;}
+        .result-total { font-size: 1rem; color: var(--text-meta); font-weight: bold; margin-bottom: 1rem; }
+        .result-grade { font-family: 'Tiro Bangla', serif; font-size: 1.2rem; font-weight: 700; color: var(--accent); margin-bottom: 1.5rem; }
+        .result-bars { display: flex; justify-content: center; gap: 1rem; margin-bottom: 1.5rem; }
+        .result-bar { background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 10px; padding: 0.8rem; min-width: 80px; }
+        .rb-num { font-size: 1.5rem; font-weight: 800; line-height: 1; margin-bottom: 5px;}
+        .rb-label { font-family: 'Tiro Bangla', serif; font-size: 0.8rem; color: var(--text-meta); font-weight: bold;}
+        .attempt-info-box { background: #fff3cd; color: #856404; padding: 10px; border-radius: 8px; font-size: 0.9rem; font-weight: 700; margin-bottom: 1.5rem; font-family: 'Tiro Bangla', serif; border: 1px solid #ffeeba;}
+        .action-btns { display: flex; flex-direction: column; gap: 10px; }
+        .action-btns button { width: 100%; padding: 12px; border-radius: 8px; font-family: 'Tiro Bangla', serif; font-size: 1rem; font-weight: 700; cursor: pointer; border: none; transition: 0.2s; }
+        .btn-retry { background: #17a2b8; color: white; }
+        .btn-review { background: #28a745; color: white; }
+        .btn-home { background: var(--bg-main); color: var(--text-main); border: 1.5px solid var(--border-color) !important; }
+
+        /* Login Modal */
+        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(3px); }
+        .login-overlay.active { display: flex; }
+        .login-modal { background: white; padding: 2.5rem 2rem; border-radius: 16px; width: 90%; max-width: 380px; box-shadow: 0 15px 40px rgba(0,0,0,0.2); text-align: center; }
+        .login-modal h2 { font-family: 'Tiro Bangla', serif; color: var(--primary); font-size: 1.4rem; margin-bottom: 0.5rem; }
+        .login-modal p { font-family: 'Tiro Bangla', serif; color: var(--text-meta); font-size: 0.9rem; margin-bottom: 1.5rem; }
+        .login-set-name { background: var(--bg-main); color: var(--primary); padding: 10px; border-radius: 8px; font-weight: 700; font-family: 'Tiro Bangla', serif; margin-bottom: 1.5rem; font-size: 0.95rem; }
+        .input-group { text-align: left; margin-bottom: 1.2rem; }
+        .input-group label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 5px; font-family: 'Tiro Bangla', serif;}
+        .input-group input { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border-color); border-radius: 8px; font-family: 'Syne', sans-serif; font-size: 0.95rem; outline: none; transition: 0.2s; }
+        .input-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,122,74,0.1); }
+        .login-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; font-family: 'Tiro Bangla', serif; font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .login-btn:hover { background: var(--primary-hover); }
+        .cancel-btn { width: 100%; background: transparent; color: var(--text-meta); border: none; padding: 10px; margin-top: 5px; font-family: 'Tiro Bangla', serif; font-weight: 700; cursor: pointer;}
+        .error-msg { color: var(--alert-danger); font-size: 0.85rem; font-weight: 700; margin-top: 10px; font-family: 'Tiro Bangla', serif; display: none; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+<header class="top-bar">
+    <div class="top-logo" onclick="location.reload()">Test<span>Bazar</span></div>
+    <div class="timer-box en-font hidden" id="timerBox">⏱ <span id="timerDisplay">10:00</span></div>
+    <div class="user-info en-font hidden" id="userDisplay"></div>
+</header>
+
+<div class="main">
+    <!-- ================= LOGIN MODAL ================= -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-modal">
+            <h2>লগইন করুন</h2>
+            <p>Test শুরু করতে আপনার ইউজারনেম ও পাসওয়ার্ড দিন</p>
+            <div class="login-set-name" id="loginSetName">📚 Set 1</div>
+            <div class="input-group">
+                <label>ইউজারনেম</label>
+                <input type="text" id="loginUsername" placeholder="Username">
+            </div>
+            <div class="input-group">
+                <label>পাসওয়ার্ড</label>
+                <input type="password" id="loginPassword" placeholder="Password" onkeydown="if(event.key==='Enter') doLogin()">
+            </div>
+            <button class="login-btn" onclick="doLogin()">✅ লগইন করে Test শুরু করো</button>
+            <button class="cancel-btn" onclick="closeLogin()">বাতিল</button>
+            <div class="error-msg" id="loginError">❌ ভুল ইউজারনেম বা পাসওয়ার্ড! (Index থেকে চেক করুন)</div>
+        </div>
+    </div>
+
+    <!-- ================= HUB PAGE ================= -->
+    <div id="hubPage">
+        <div class="hub-header">
+            <h1>রসায়ন 3rd Sem Unit 2:<br>p-ব্লক মৌলসমূহ</h1>
+            <p>আপনার নির্দেশিত ৯টি স্পেশাল সেট (প্রতিটিতে ১৫টি প্রশ্ন)। Test শুরু করতে সেটে ক্লিক করুন।</p>
+        </div>
+        <div class="set-grid" id="setGrid"></div>
+        <div style="text-align: center; margin-top: 30px;">
+            <button onclick="window.history.back()" style="background: white; border: 1.5px solid var(--border-color); padding: 10px 20px; border-radius: 8px; font-family: 'Tiro Bangla', serif; font-weight: bold; cursor: pointer; color: var(--text-meta);">← Main Dashboard-এ ফিরুন</button>
+        </div>
+    </div>
+
+    <!-- ================= QUIZ AREA ================= -->
+    <div id="testArea" class="hidden">
+        <div class="quiz-info">
+            <div class="info-item">🎓 <strong>রসায়ন</strong> — 3rd Sem | <span id="testSetLabel">Set 1</span></div>
+            <div class="info-item">📝 <span id="testTopic">Topic Name</span></div>
+        </div>
+        <div class="progress-wrap"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+        
+        <div class="q-card">
+            <div class="q-num en-font" id="qNum">প্রশ্ন ১ / ১৫</div>
+            <div class="q-text" id="qText">Question Text</div>
+            <div class="opts" id="qOpts"></div>
+            <div class="explanation" id="explanation"><p id="explanationText"></p></div>
+            
+            <div class="nav-row">
+                <div class="score-show" id="scoreShow">সঠিক: ০ | ভুল: ০</div>
+                <button class="next-btn" id="nextBtn" onclick="nextQ()" disabled>পরবর্তী →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= RESULT AREA ================= -->
+    <div class="result-wrap" id="resultWrap">
+        <div class="result-icon" id="resultIcon">🏆</div>
+        <div class="result-score en-font" id="finalScore">100%</div>
+        <div class="result-total">স্কোর</div>
+        <div class="result-grade" id="resultGrade">অসাধারণ!</div>
+        
+        <div class="result-bars">
+            <div class="result-bar">
+                <div class="rb-num en-font" id="rbCorrect" style="color:var(--primary)">15</div>
+                <div class="rb-label">সঠিক</div>
+            </div>
+            <div class="result-bar">
+                <div class="rb-num en-font" id="rbWrong" style="color:var(--alert-danger)">0</div>
+                <div class="rb-label">ভুল/স্কিপ</div>
+            </div>
+        </div>
+        
+        <div class="attempt-info-box" id="attemptInfo"></div>
+        <div class="action-btns">
+            <button class="btn-retry" onclick="restartQuiz()">আবার চেষ্টা করো</button>
+            <button class="btn-review" onclick="showReview()">উত্তর দেখো</button>
+            <button class="btn-home" onclick="goToHub()">← Hub এ ফিরে যাও</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const MAX_ATTEMPTS = 10;
+const TIME_LIMIT = 10 * 60; // 10 Minutes
+const LABELS = ['ক', 'খ', 'গ', 'ঘ'];
+
+const ALL_SETS = {
+    1: {
+        name: 'Set 1', icon: '📚', topic: 'p-ব্লক মৌলসমূহ (Group 15 - সাধারণ ধর্ম ও নাইট্রোজেন)',
+        questions: [
+            { q: "p-ব্লক মৌলগুলির যোজ্যতা-কক্ষের সাধারণ ইলেকট্রন-বিন্যাস হল-", opts: ["$(n-1)d^{10}ns^2np^{1-6}$", "$(n-2)f^{14}ns^2np^{1-6}$", "$ns^2np^{1-6}$", "$ns^2np^0$"], ans: 2, exp: "ব্যাখ্যা: p-ব্লক মৌলসমূহের সর্বশেষ ইলেকট্রনটি p-অর্বিট্যালে প্রবেশ করে। এদের যোজ্যতা-কক্ষের সাধারণ ইলেকট্রন-বিন্যাস $ns^2np^{1-6}$ হয়।" },
+            { q: "গ্রুপ-15 মৌলগুলির ধাতব চরিত্র বৃদ্ধির সঠিক ক্রম হল-", opts: ["N < P < As < Sb < Bi", "Bi < Sb < As < P < N", "As < P < N < Bi < Sb", "Sb < P < N < As < Bi"], ans: 0, exp: "ব্যাখ্যা: গ্রুপের ওপর থেকে নীচে গেলে পরমাণুর আকার বাড়ে এবং আয়নীভবন এনথ্যালপি হ্রাস পায়। ফলে ইলেকট্রন বর্জনের প্রবণতা বা ধাতব চরিত্র ক্রমশ বৃদ্ধি পায়।" },
+            { q: "বন্ধন-বিয়োজন এনথ্যালপি হ্রাসের সঠিক ক্রম হল-", opts: ["P-P > N-N > C-C > As-As", "C-C > P-P > N-N > As-As", "N-N > C-C > As-As > P-P", "As-As > N-N > P-P > C-C"], ans: 1, exp: "ব্যাখ্যা: N-পরমাণুর আকার ছোট হওয়ায় N-N এক-বন্ধনে নিঃসঙ্গ ইলেকট্রন-জোড়ের মধ্যে তীব্র বিকর্ষণ ঘটে, ফলে N-N বন্ধন P-P অপেক্ষা দুর্বল হয়।" },
+            { q: "নীচের কোন্ মৌলটি +1 থেকে +5 পর্যন্ত জারণ অবস্থাবিশিষ্ট অক্সাইড গঠন করে?", opts: ["P", "As", "N", "Sb"], ans: 2, exp: "ব্যাখ্যা: নাইট্রোজেন +1 থেকে +5 পর্যন্ত সবকটি জারণ স্তরের অক্সাইড ($N_2O, NO, N_2O_3, NO_2, N_2O_5$) গঠন করতে পারে।" },
+            { q: "প্রদত্ত হাইড্রাইডগুলির বাষ্পীভবন এনথ্যালপি বৃদ্ধির সঠিক ক্রম হল-", opts: ["$PH_3 < AsH_3 < NH_3$", "$NH_3 < PH_3 < AsH_3$", "$AsH_3 < PH_3 < NH_3$", "$PH_3 < NH_3 < AsH_3$"], ans: 0, exp: "ব্যাখ্যা: অ্যামোনিয়া ($NH_3$) অণুগুলির মধ্যে আন্তরাণবিক হাইড্রোজেন বন্ধন উপস্থিত থাকায় এর বাষ্পীভবন এনথ্যালপি এবং স্ফুটনাঙ্ক ফসফিন ($PH_3$) ও আর্সিন ($AsH_3$) অপেক্ষা বেশি হয়।" },
+            { q: "নীচের কোন্ যৌগ দুটির কোনো অস্তিত্ব নেই?", opts: ["$PCl_3, AsCl_3$", "$BiCl_5, NCl_5$", "$AsCl_3, SbCl_3$", "$PCl_5, NCl_3$"], ans: 1, exp: "ব্যাখ্যা: নাইট্রোজেনের যোজ্যতা-কক্ষে d-অর্বিট্যাল না থাকায় এটি $NCl_5$ গঠন করতে পারে না। অন্যদিকে নিষ্ক্রিয়-জোড় প্রভাবের কারণে Bi-এর +5 জারণ অবস্থা অস্থিতিশীল, তাই $BiCl_5$ গঠিত হয় না।" },
+            { q: "নীচের কোন্ দুটি উভধর্মী অক্সাইড?", opts: ["$N_2O_3, P_2O_3$", "$As_2O_3, Sb_2O_3$", "$Bi_2O_3, Sb_2O_3$", "$P_2O_3, As_2O_3$"], ans: 1, exp: "ব্যাখ্যা: গ্রুপ-15-এর অক্সাইডগুলির মধ্যে আর্সেনিক ও অ্যান্টিমনির অক্সাইডসমূহ উভধর্মী (অ্যাসিড ও ক্ষার উভয়ের সাথেই বিক্রিয়া করে) প্রকৃতির হয়।" },
+            { q: "কোন্ গ্রুপ-15 মৌলটির ঘনত্ব সবচেয়ে বেশি?", opts: ["P", "As", "Bi", "Sb"], ans: 2, exp: "ব্যাখ্যা: গ্রুপের ওপর থেকে নীচে পারমাণবিক ভর বৃদ্ধির হার আয়তন বৃদ্ধির হার অপেক্ষা বেশি হওয়ায় ঘনত্ব ক্রমশ বৃদ্ধি পায়। তাই Bi-এর ঘনত্ব সর্বাধিক।" },
+            { q: "নাইট্রোজেন সম্পর্কে নীচের কোনটি সঠিক?", opts: ["তড়িৎ-ঋণাত্মকতা কম", "d-অর্বিট্যাল আছে", "পরমাণুগুলি নিজেদের মধ্যে $p\\pi-p\\pi$ বন্ধন গঠনে সক্ষম", "কঠিন অবস্থায় পাওয়া যায়"], ans: 2, exp: "ব্যাখ্যা: নাইট্রোজেন আকারে ছোট এবং তড়িৎ-ঋণাত্মকতা বেশি হওয়ার কারণে এটি অন্য N বা C পরমাণুর সঙ্গে শক্তিশালী $p\\pi-p\\pi$ বহুবন্ধন গঠন করতে পারে।" },
+            { q: "নীচের কোন হাইড্রাইড যৌগটির বন্ধন-কোণ সবচেয়ে বেশি?", opts: ["$NH_3$", "$PH_3$", "$AsH_3$", "$SbH_3$"], ans: 0, exp: "ব্যাখ্যা: নাইট্রোজেনের তড়িৎ-ঋণাত্মকতা সর্বাধিক হওয়ায় $NH_3$ এর বন্ধন-জোড় ইলেকট্রনগুলি নাইট্রোজেনের কাছাকাছি থাকে এবং বিকর্ষণ বেশি হয়, ফলে বন্ধন-কোণ সর্বাধিক হয়।" },
+            { q: "নীচের কোন্ হাইড্রাইডটি সবচেয়ে বেশি ক্ষারকীয়?", opts: ["$AsH_3$", "$SbH_3$", "$PH_3$", "$NH_3$"], ans: 3, exp: "ব্যাখ্যা: N-এর আকার সবচেয়ে ছোটো হওয়ায় অ্যামোনিয়ায় N-এর ইলেকট্রন ঘনত্ব খুব বেশি থাকে, ফলে এটি খুব সহজেই প্রোটন গ্রহণ করতে পারে।" },
+            { q: "কোল্টিন্টর আর্দ্রবিশ্লেষণের ফলে সাদা অধঃক্ষেপ উৎপন্ন হয়?", opts: ["$SbCl_3$", "$BiCl_3$", "$NCl_3$", "$AsCl_3$"], ans: 1, exp: "ব্যাখ্যা: বিসমাথ ট্রাইক্লোরাইড ($BiCl_3$) আর্দ্রবিশ্লেষিত হয়ে বিসমাথ অক্সিক্লোরাইডের (BiOCl) সাদা অধঃক্ষেপ উৎপন্ন করে।" },
+            { q: "কোন্ পরীক্ষার সাহায্যে আর্সেনিককে শনাক্ত করা যায়?", opts: ["লুকাস পরীক্ষা", "মার্স পরীক্ষা", "বলয় পরীক্ষা", "নেসলার পরীক্ষা"], ans: 1, exp: "ব্যাখ্যা: যৌগে আর্সেনিকের উপস্থিতি নিশ্চিত করতে রসায়নাগারে মার্স পরীক্ষা (Marsh Test) করা হয়।" },
+            { q: "নাইট্রোজেনের সর্বোচ্চ সমযোজ্যতা কত?", opts: ["3", "4", "5", "6"], ans: 1, exp: "ব্যাখ্যা: নাইট্রোজেনের যোজ্যতা কক্ষে একটি 2s এবং তিনটি 2p অর্বিট্যাল (মোট 4টি অর্বিট্যাল) থাকায় এটি সর্বাধিক 4টি সমযোজী বন্ধন তৈরি করতে পারে।" },
+            { q: "বিসমাথ +5 জারণ স্তরে, শুধুমাত্র একটি স্থিতিশীল যৌগ গঠন করে। যৌগটি হল-", opts: ["$Bi_2O_5$", "$BiF_5$", "$BiCl_5$", "$Bi_2S_5$"], ans: 1, exp: "ব্যাখ্যা: নিষ্ক্রিয়-জোড় প্রভাবের কারণে বিসমাথের +5 জারণ অবস্থা খুবই অস্থিতিশীল। শুধুমাত্র সর্বাধিক তড়িৎ-ঋণাত্মক মৌল ফ্লুরিনের সাথেই এটি $BiF_5$ গঠন করতে পারে।" }
+        ]
+    },
+    2: {
+        name: 'Set 2', icon: '🧪', topic: 'p-ব্লক মৌলসমূহ (Group 15 - অ্যামোনিয়া ও নাইট্রোজেনের অক্সাইডসমূহ)',
+        questions: [
+            { q: "অ্যামোনিয়ার সঙ্গে নেসলার বিকারকের বিক্রিয়ায় উৎপন্ন হয় একটি-", opts: ["গাঢ় নীল অধঃক্ষেপ", "সবুজ অধঃক্ষেপ", "সাদা অধঃক্ষেপ", "বাদামি অধঃক্ষেপ"], ans: 3, exp: "ব্যাখ্যা: নেসলার বিকারক অ্যামোনিয়ার সংস্পর্শে এলে আয়োডাইড অফ মিলন্স বেস-এর একটি বাদামি অধঃক্ষেপ তৈরি করে।" },
+            { q: "সিলভার ক্লোরাইড অতিরিক্ত অ্যামোনিয়াম হাইড্রক্সাইডে দ্রবীভূত হয়। দ্রবণে ক্যাটায়ন-রূপে উপস্থিত থাকে-", opts: ["$Ag^+$", "$[Ag(NH_3)_2]^+$", "$[Ag(NH_3)_4]^{2+}$", "$[Ag(NH_3)_6]^+$"], ans: 1, exp: "ব্যাখ্যা: অদ্রাব্য AgCl অতিরিক্ত অ্যামোনিয়াম হাইড্রক্সাইডে দ্রবীভূত হয়ে ডাইঅ্যামিনসিলভার (I) ক্লোরাইড নামক দ্রাব্য জটিল যৌগ গঠন করে, যার ক্যাটায়ন হলো $[Ag(NH_3)_2]^+$।" },
+            { q: "নীচের কোন্টি গঠিত হওয়ার জন্য কপার সালফেট দ্রবণে $NH_4OH$ যোগ করলে দ্রবণ নীল বর্ণ ধারণ করে?", opts: ["$[Cu(NH_3)_4]SO_4$", "$Cu(OH)_2$", "$Cu(NH_4SO_4)_2$", "CuO"], ans: 0, exp: "ব্যাখ্যা: কপার সালফেট অতিরিক্ত অ্যামোনিয়ায় দ্রবীভূত হয়ে টেট্রাঅ্যামিনকপার (II) সালফেট গঠন করে, যা দ্রবণের গাঢ় নীল বর্ণের জন্য দায়ী।" },
+            { q: "উত্তপ্ত CuO-এর ওপর দিয়ে $NH_3$ চালনা করলে কোল্টিন্ট নির্গত হয়?", opts: ["$N_2O$", "$HNO_3$", "$NO_2$", "$N_2$"], ans: 3, exp: "ব্যাখ্যা: অ্যামোনিয়া একটি বিজারক পদার্থ। উত্তপ্ত কিউপ্রিক অক্সাইডের (CuO) ওপর দিয়ে অ্যামোনিয়া চালনা করলে তা বিজারিত হয়ে কপার ধাতু ও নাইট্রোজেন গ্যাস ($N_2$) উৎপন্ন করে।" },
+            { q: "পরীক্ষাগারে নাইট্রাস অক্সাইড ($N_2O$) প্রস্তুত করা হয়-", opts: ["NO-এর বিজারণ ঘটিয়ে", "$HNO_3$-এর বিজারণ ঘটিয়ে", "নাইট্রোজেন এবং অক্সিজেন যুক্ত করে", "$NH_4NO_3$-এর তাপীয় বিয়োজন ঘটিয়ে"], ans: 3, exp: "ব্যাখ্যা: অ্যামোনিয়াম নাইট্রেটকে ($NH_4NO_3$) সাবধানে উত্তপ্ত করলে এটি বিয়োজিত হয়ে নাইট্রাস অক্সাইড বা লাফিং গ্যাস ($N_2O$) এবং জল উৎপন্ন করে।" },
+            { q: "-30°C তাপমাত্রায় সমমোলার পরিমাণে দুটি গ্যাসের (NO ও NO2) বিক্রিয়ায় উৎপন্ন হালকা হলুদ তরলটি হল-", opts: ["$N_2O_3$", "$N_2O$", "$N_2O_4$", "$N_2O_5$"], ans: 0, exp: "ব্যাখ্যা: NO এবং $NO_2$-এর সমমোলার মিশ্রণকে খুব নিম্ন তাপমাত্রায় (-30°C) ঠান্ডা করলে ডাইনাইট্রোজেন ট্রাইঅক্সাইড ($N_2O_3$) নামক নীল/হালকা হলুদ তরল উৎপন্ন হয়।" },
+            { q: "লেড নাইট্রেটকে উত্তপ্ত করলে একটি বাদামি গ্যাস (A) উৎপন্ন হয়। A-কে ঠান্ডা করলে এটি বর্ণহীন কঠিনে (B) পরিণত হয়। B-এর সঙ্গে NO-এর বিক্রিয়ায় একটি নীল বর্ণের কঠিন (C) গঠিত হয়। C যৌগে নাইট্রোজেনের জারণ অবস্থা হল-", opts: ["+5", "+4", "+3", "+2"], ans: 2, exp: "ব্যাখ্যা: C হলো $N_2O_3$, যাতে নাইট্রোজেনের জারণ অবস্থা +3।" },
+            { q: "নাইট্রোজেনের অক্সাইডগুলির আম্লিক প্রকৃতি বৃদ্ধির সঠিক ক্রম হল-", opts: ["$NO < N_2O < N_2O_3 < NO_2 < N_2O_5$", "$N_2O < NO < N_2O_3 < NO_2 < N_2O_5$", "$N_2O_5 < NO_2 < N_2O_3 < NO < N_2O$", "$N_2O_5 < N_2O_3 < NO_2 < NO < N_2O$"], ans: 1, exp: "ব্যাখ্যা: কেন্দ্রীয় পরমাণুর জারণ সংখ্যা যত বৃদ্ধি পায়, অক্সাইডগুলির আম্লিক চরিত্র তত বাড়ে।" },
+            { q: "নীচের কোন্ অক্সাইডটি জারক ও বিজারক উভয়রূপেই কাজ করে?", opts: ["ডাইনাইট্রোজেন অক্সাইড", "নাইট্রোজেন ডাইঅক্সাইড ($NO_2$)", "নাইট্রিক অক্সাইড", "ডাইনাইট্রোজেন পেন্টক্সাইড"], ans: 1, exp: "ব্যাখ্যা: $NO_2$-তে নাইট্রোজেনের জারণ সংখ্যা +4, যা একটি মধ্যবর্তী অবস্থা। তাই এটি জারিত হয়ে +5 বা বিজারিত হয়ে নিম্ন জারণ অবস্থায় যেতে পারে।" },
+            { q: "কোন্ লবণটির বিয়োজনের ফলে কোনো কঠিন অবশেষ থাকে না?", opts: ["লেড নাইট্রেট", "সিলভার নাইট্রেট", "অ্যামোনিয়াম নাইট্রেট", "সোডিয়াম নাইট্রেট"], ans: 2, exp: "ব্যাখ্যা: অ্যামোনিয়াম নাইট্রেট উত্তপ্ত করলে এটি বিয়োজিত হয়ে $N_2O$ গ্যাস এবং জলীয় বাষ্প ($H_2O$) উৎপন্ন করে।" },
+            { q: "কোন্টি Fe(II) আয়নের সঙ্গে যুক্ত হয়ে বাদামি কমপ্লেক্স গঠন করে?", opts: ["$N_2O$", "NO", "$N_2O_3$", "$N_2O_5$"], ans: 1, exp: "ব্যাখ্যা: নাইট্রেট মূলকের বলয় পরীক্ষায় উৎপন্ন নাইট্রিক অক্সাইড (NO) গ্যাস ফেরাস সালফেটের জলীয় দ্রবণের সাথে যুক্ত হয়ে বাদামি বলয় কমপ্লেক্স গঠন করে।" },
+            { q: "$HNO_2$ কী হিসেবে কাজ করে?", opts: ["জারক পদার্থ", "জারক এবং বিজারক পদার্থ", "বিজারক পদার্থ", "দ্রাবক"], ans: 1, exp: "ব্যাখ্যা: নাইট্রাস অ্যাসিডে ($HNO_2$) নাইট্রোজেনের জারণ অবস্থা +3, যা একটি অন্তর্বর্তী জারণ অবস্থা। ফলে এটি ইলেকট্রন গ্রহণ করে বিজারিত বা বর্জন করে জারিত হতে পারে।" },
+            { q: "নাইট্রেট মূলকের বলয় পরীক্ষায় যে কমপ্লেক্স গঠনের জন্য একটি বাদামি বলয় সৃষ্টি হয় সেটি হল-", opts: ["$[Fe(H_2O)_6ONO]^{2+}$", "$[Fe(H_2O)_6NO]^{2+}$", "$[Fe(H_2O)_5ONO]$", "$[Fe(H_2O)_5NO]^{2+}$"], ans: 3, exp: "ব্যাখ্যা: বলয় পরীক্ষায় উৎপন্ন বাদামি বলয়টি হলো পেন্টাঅ্যাকোয়ানাইট্রোসিলআয়রন (II) সালফেট কমপ্লেক্স যার ক্যাটায়নিক রূপটি হলো $[Fe(H_2O)_5NO]^{2+}$।" },
+            { q: "প্রদত্ত কোন্ যৌগকে উত্তপ্ত করলে নাইট্রোজেন গ্যাস পাওয়া যায়?", opts: ["$NH_4NO_2$", "$NaN_3$", "$(NH_4)_2Cr_2O_7$", "সবগুলি"], ans: 3, exp: "ব্যাখ্যা: অ্যামোনিয়াম নাইট্রাইট, সোডিয়াম অ্যাজাইড এবং অ্যামোনিয়াম ডাইক্রোমেট—এই তিনটি যৌগের তাপীয় বিয়োজনে নাইট্রোজেন গ্যাস ($N_2$) উৎপন্ন হয়।" },
+            { q: "নাইট্রোজেনের কোন্ অক্সাইডটি প্রশম?", opts: ["$N_2O$", "$N_2O_3$", "$N_2O_5$", "$N_2O_4$"], ans: 0, exp: "ব্যাখ্যা: নাইট্রোজেনের অক্সাইডগুলির মধ্যে নাইট্রাস অক্সাইড ($N_2O$) এবং নাইট্রিক অক্সাইড (NO) হলো প্রশম প্রকৃতির অক্সাইড।" }
+        ]
+    },
+    4: {
+        name: 'Set 4', icon: '☁️', topic: 'p-ব্লক মৌলসমূহ (Group 16 - সাধারণ ধর্ম, অক্সিজেন ও ওজোন)',
+        questions: [
+            { q: "চ্যালকোজেনগুলির (Group 16) যোজ্যতা-কক্ষের সাধারণ ইলেকট্রন-বিন্যাস হল-", opts: ["$ns^2np^5$", "$ns^2np^4$", "$ns^2np^3$", "$ns^2np^2$"], ans: 1, exp: "ব্যাখ্যা: গ্রুপ-16 বা অক্সিজেন পরিবারের মৌলসমূহের সর্ববহিস্থ বা যোজ্যতা-কক্ষে মোট ৬টি ইলেকট্রন থাকে। তাই এদের সাধারণ ইলেকট্রন-বিন্যাস $ns^2np^4$ হয়।" },
+            { q: "নীচের কোল্টির ইলেকট্রন-আসক্তি সর্বাধিক?", opts: ["O", "S", "Se", "Te"], ans: 1, exp: "ব্যাখ্যা: অক্সিজেনের আকার অতি ক্ষুদ্র হওয়ায় ইলেকট্রন ঘনত্বের বিকর্ষণ অনেক বেশি। তাই অক্সিজেন অপেক্ষা সালফারের ইলেকট্রন-আসক্তি বা ইলেকট্রন-গ্রহণ এনথ্যালপি বেশি হয়।" },
+            { q: "তরল এবং কঠিন অবস্থায় ডাইঅক্সিজেনের রং হল-", opts: ["ফ্যাকাশে নীল", "ফ্যাকাশে হলুদ", "নীল", "বর্ণহীন"], ans: 0, exp: "ব্যাখ্যা: অক্সিজেন গ্যাসীয় অবস্থায় বর্ণহীন হলেও, তরল এবং কঠিন উভয় অবস্থাতেই এটি ফ্যাকাশে নীল বর্ণ ধারণ করে।" },
+            { q: "নীচের কোন্টি বহুরূপতা (Allotropy) প্রদর্শন করে?", opts: ["অক্সিজেন", "সালফার", "সেলেনিয়াম", "সবকটিই"], ans: 3, exp: "ব্যাখ্যা: গ্রুপ-16-এর অন্তর্গত সবকটি মৌলই বহুরূপতা প্রদর্শন করে।" },
+            { q: "ইলেকট্রন-গ্রহণ এনথ্যালপির (ঋণাত্মক মান) সঠিক ক্রম হল-", opts: ["O > S > Se > Te", "S > O > Se > Te", "Te > Se > S > O", "S > Se > Te > O"], ans: 3, exp: "ব্যাখ্যা: সালফারের ইলেকট্রন-গ্রহণ এনথ্যালপি সর্বাধিক। অক্সিজেনের অত্যন্ত ক্ষুদ্র আকারের কারণে এর মান সালফার, সেলেনিয়াম এবং টেলুরিয়ামের চেয়েও কম হয়।" },
+            { q: "নীচের কোন্ মৌলটি জলের সঙ্গে বিক্রিয়ায় $O_2$ উৎপন্ন করে?", opts: ["P", "I", "Na", "F"], ans: 3, exp: "ব্যাখ্যা: ফ্লোরিন ($F_2$) তীব্র জারক পদার্থ হওয়ায় এটি জলের সাথে অত্যন্ত দ্রুত বিক্রিয়া করে জলকে জারিত করে অক্সিজেন ($O_2$) বা ওজোন ($O_3$) গ্যাস উৎপন্ন করে।" },
+            { q: "ডুবুরিরা গভীর সমুদ্রে যাওয়ার সময় কোন্ দুটি গ্যাসের মিশ্রণ ব্যবহার করে?", opts: ["$O_2$ এবং He", "$O_2$ এবং $CO_2$", "$O_2$ এবং Ar", "$CO_2$ এবং Ar"], ans: 0, exp: "ব্যাখ্যা: গভীর সমুদ্রে উচ্চ চাপে নাইট্রোজেনের রক্তে দ্রাব্যতা বেশি হওয়ায় ডিকম্প্রেশন সিকনেস (ব্যান্ডস) এড়াতে নাইট্রোজেনের পরিবর্তে হিলিয়াম ও অক্সিজেনের মিশ্রণ ব্যবহার করা হয়।" },
+            { q: "নীচের কোন্টিকে উত্তপ্ত করলে $O_2$ গ্যাস উৎপন্ন হয়?", opts: ["লেড নাইট্রেট", "পটাশিয়াম ক্লোরেট", "ম্যাঙ্গানিজ ডাইঅক্সাইড", "সবকটিই"], ans: 3, exp: "ব্যাখ্যা: লেড নাইট্রেট, পটাশিয়াম ক্লোরেট ($KClO_3$) এবং ম্যাঙ্গানিজ ডাইঅক্সাইড ($MnO_2$) প্রভৃতি অক্সিজেন-সমৃদ্ধ যৌগকে তীব্রভাবে উত্তপ্ত করলে এরা বিয়োজিত হয়ে অক্সিজেন গ্যাস নির্গত করে।" },
+            { q: "কোন্ গ্যাসটি শনাক্তকরণের জন্য 'trailing of mercury' পরীক্ষাটি করা হয়?", opts: ["ডাইহাইড্রোজেন", "ডাইনাইট্রোজেন", "ডাইঅক্সিজেন", "ট্রাইঅক্সিজেন (ওজোন)"], ans: 3, exp: "ব্যাখ্যা: ওজোন ($O_3$) গ্যাসের সংস্পর্শে এলে পারদ (মার্কারি) তার স্বাভাবিক সচলতা হারায় এবং কাঁচের গায়ে আটকে যায়, এটি ট্রেইলিং অব মার্কারি নামে পরিচিত।" },
+            { q: "ডাইঅক্সিজেন সকল দশায় কীরূপ আচরণ প্রদর্শন করে?", opts: ["পরাচুম্বকীয়", "তিরশুম্বকীয়", "উভয়ই", "কোনোটিই নয়"], ans: 0, exp: "ব্যাখ্যা: ডাইঅক্সিজেন ($O_2$) অণুর আণবিক অর্বিট্যালে দুটি অযুগ্ম ইলেকট্রন উপস্থিত থাকে, তাই এটি সকল দশাতেই পরাচুম্বকীয় আচরণ দেখায়।" },
+            { q: "অক্সিজেন একটি গ্যাস, কিন্তু সালফার একটি কঠিন কারণ-", opts: ["অক্সিজেনের আণবিক ভর কম", "অক্সিজেন দ্বি-পরমাণুক অণু, সালফার বহুপরমাণুক অণু", "সালফার শক্তিশালী জারক", "কোনোটিই নয়"], ans: 1, exp: "ব্যাখ্যা: অক্সিজেন দ্বি-পরমাণুক ($O_2$) অণু গঠন করে যার মধ্যে দুর্বল ভ্যান ডার ওয়ালস বল কাজ করে। কিন্তু সালফার বহুপরমাণুক ($S_8$) শৃঙ্খল গঠন করায় সাধারণ অবস্থায় কঠিন হয়।" },
+            { q: "নীচের কোন্ মৌলটি একটি ধাতুকল্প?", opts: ["সালফার", "অক্সিজেন", "টেলুরিয়াম", "পোলোনিয়াম"], ans: 2, exp: "ব্যাখ্যা: গ্রুপ-16 এর মৌলগুলির মধ্যে টেলুরিয়াম (Te) একটি ধাতুকল্প হিসেবে আচরণ করে।" },
+            { q: "অক্সিজেনের আইসোটোপের সংখ্যা হল-", opts: ["2", "3", "4", "5"], ans: 1, exp: "ব্যাখ্যা: অক্সিজেনের তিনটি প্রাকৃতিক আইসোটোপ রয়েছে: $^{16}O, ^{17}O$ এবং $^{18}O$।" },
+            { q: "ওজোন অণুর গঠন হল-", opts: ["সরলরৈখিক", "সমতলীয় ত্রিভুজাকার", "কৌণিক বা V-আকৃতির", "পিরামিডীয়"], ans: 2, exp: "ব্যাখ্যা: ওজোন ($O_3$) অণুর কেন্দ্রীয় অক্সিজেন পরমাণু $sp^2$ সংকরায়িত এবং একটি লোন-পেয়ার থাকায় এর গঠন কৌণিক হয়।" },
+            { q: "জলকে জীবাণুমুক্ত করার জন্য ব্যবহৃত হয়-", opts: ["$SO_2$", "$O_3$", "$NH_3$", "$CO_2$"], ans: 1, exp: "ব্যাখ্যা: ওজোন ($O_3$) একটি শক্তিশালী জারক যা জলকে জীবাণুমুক্ত করতে ব্যবহার করা হয়।" }
+        ]
+    },
+    5: {
+        name: 'Set 5', icon: '♨️', topic: 'p-ব্লক মৌলসমূহ (Group 16 - সালফার ও তার যৌগসমূহ)',
+        questions: [
+            { q: "নীচের হাইড্রাইডগুলির আম্লিক চরিত্রের সঠিক ক্রম হল-", opts: ["$H_2O > H_2S > H_2Se > H_2Te$", "$H_2O > H_2S > H_2Se = H_2Te$", "$H_2O > H_2S < H_2Se < H_2Te$", "$H_2O < H_2S < H_2Se < H_2Te$"], ans: 3, exp: "ব্যাখ্যা: গ্রুপের ওপর থেকে নীচে পরমাণুর আকার বৃদ্ধির সাথে সাথে E-H বন্ধন-দৈর্ঘ্য বৃদ্ধি পায় এবং বন্ধন-বিয়োজন এনথ্যালপি হ্রাস পায়। ফলে প্রোটন ($H^+$) ত্যাগের প্রবণতা বা আম্লিক চরিত্র ক্রমশ বৃদ্ধি পায়।" },
+            { q: "বন্ধন-কোণের সঠিক ক্রম হল-", opts: ["$H_2O > H_2S > H_2Se > H_2Te$", "$H_2S > H_2Te > H_2Se > H_2O$", "$H_2Te > H_2Se > H_2S > H_2O$", "$H_2O < H_2S < H_2Se < H_2Te$"], ans: 0, exp: "ব্যাখ্যা: কেন্দ্রীয় পরমাণুর তড়িৎ-ঋণাত্মকতা হ্রাস পাওয়ার সাথে সাথে বন্ধন-জোড় ইলেকট্রনগুলি কেন্দ্রীয় পরমাণু থেকে দূরে সরে যায়, ফলে তাদের মধ্যে বিকর্ষণ হ্রাস পায় এবং বন্ধন-কোণ কমে যায়।" },
+            { q: "নীচের কোন্ হাইড্রাইডটি বিষাক্ত নয়?", opts: ["$H_2S$", "$H_2Se$", "$H_2Te$", "$H_2O$"], ans: 3, exp: "ব্যাখ্যা: গ্রুপ-16-এর হাইড্রাইডগুলির মধ্যে একমাত্র জল ($H_2O$) জীবনধারণের জন্য অপরিহার্য এবং এটি কোনোভাবেই বিষাক্ত নয়।" },
+            { q: "প্রদত্ত গ্যাসগুলির মধ্যে কোন্ট্রি ঝাঁজালো গন্ধযুক্ত কিন্তু বর্ণহীন?", opts: ["$SO_2$", "$NO_2$", "$N_2$", "$Cl_2$"], ans: 0, exp: "ব্যাখ্যা: সালফার ডাইঅক্সাইড ($SO_2$) হলো একটি বর্ণহীন গ্যাস, যার অত্যন্ত তীব্র, শ্বাসরোধী এবং পোড়া গন্ধকের মতো ঝাঁজালো গন্ধ আছে।" },
+            { q: "নীচের কোল্টি লেড অ্যাসিটেট দ্বারা সিক্ত কাগজকে কালো করে?", opts: ["$H_2SO_4$", "$SO_2$", "$H_2S$", "$CO_2$"], ans: 2, exp: "ব্যাখ্যা: হাইড্রোজেন সালফাইড ($H_2S$) গ্যাস লেড অ্যাসিটেট দ্বারা সিক্ত কাগজের সংস্পর্শে এলে লেড সালফাইডের (PbS) কালো অধঃক্ষেপ সৃষ্টি করে, ফলে কাগজটি কালো হয়ে যায়।" },
+            { q: "$H_2S$ গ্যাসকে নাইট্রিক অ্যাসিডের মধ্যে চালনা করলে উৎপন্ন হয়—", opts: ["প্লাস্টিক সালফার", "কোলয়ডীয় সালফার", "$SO_3$", "$SO_2$"], ans: 1, exp: "ব্যাখ্যা: নাইট্রিক অ্যাসিড একটি তীব্র জারক। এটি $H_2S$ গ্যাসকে জারিত করে সালফারের অধঃক্ষেপ বা কোলয়ডীয় সালফার উৎপন্ন করে।" },
+            { q: "নীচের কোন্টি দ্বারা আর্দ্র $SO_2$ গ্যাসকে শুষ্ক করা যায়?", opts: ["CaO", "NaOH", "গাঢ় $H_2SO_4$", "BaO"], ans: 2, exp: "ব্যাখ্যা: $SO_2$ গ্যাস আম্লিক প্রকৃতির হওয়ায় একে শুষ্ক করতে গাঢ় সালফিউরিক অ্যাসিড ($H_2SO_4$) ব্যবহার করা হয়।" },
+            { q: "ওলিয়াম বা পাইরোসালফিউরিক অ্যাসিড যৌগে উপস্থিত সালফার পরমাণুর জারণ সংখ্যা কত?", opts: ["+4", "+5", "+6", "+7"], ans: 2, exp: "ব্যাখ্যা: $H_2S_2O_7$-এ সালফারের জারণ সংখ্যা হিসাব করলে $x = +6$ পাওয়া যায়, যা সালফারের সর্বোচ্চ জারণ অবস্থা।" },
+            { q: "ধূমায়মান সালফিউরিক অ্যাসিডের রাসায়নিক সংকেতে উপস্থিত অক্সিজেন পরমাণুর সংখ্যা হল-", opts: ["5", "6", "7", "8"], ans: 2, exp: "ব্যাখ্যা: ওলিয়াম বা ধূমায়মান সালফিউরিক অ্যাসিডের রাসায়নিক সংকেত হলো $H_2S_2O_7$। এতে ৭টি অক্সিজেন পরমাণু থাকে।" },
+            { q: "সালফারের কোন্ রূপভেদটি ঘরের উয়তায় সর্বাধিক স্থিতিশীল?", opts: ["রম্বিক বা $\\alpha$-সালফার", "মনোক্লিনিক বা $\\beta$-সালফার", "প্লাস্টিক সালফার", "কোলয়ডীয় সালফার"], ans: 0, exp: "ব্যাখ্যা: ঘরের উয়তায় সালফারের রম্বিক রূপভেদটি তাপগতীয়ভাবে সবচেয়ে বেশি স্থিতিশীল।" },
+            { q: "একটি গ্যাস বিজারণ দ্বারা ফুলের বর্ণকে বিরঞ্জিত করে এবং অন্য একটি গ্যাস জারণ দ্বারা ফুলের বর্ণকে বিরঞ্জিত করে, গ্যাস দুটি হল-", opts: ["CO এবং $Cl_2$", "$NH_3$ এবং $SO_3$", "$H_2S$ এবং $Br_2$", "$SO_2$ এবং $Cl_2$"], ans: 3, exp: "ব্যাখ্যা: সালফার ডাইঅক্সাইড ($SO_2$) জলীয় দ্রবণে বিজারক হিসেবে কাজ করে অস্থায়ী বিরঞ্জন ঘটায়, অন্যদিকে ক্লোরিন ($Cl_2$) জারণের মাধ্যমে স্থায়ী বিরঞ্জন ঘটায়।" },
+            { q: "$S_2O_6^{2-}$ আয়নে S-S সরাসরি বন্ধন বর্তমান, কিন্তু $S_2O_7^{2-}$ আয়নে কোন বন্ধন বর্তমান থাকে?", opts: ["S-S বন্ধন", "S=S দ্বি-বন্ধন", "-O-O- পারক্সো বন্ধন", "S-O-S অক্সিজেন সেতু বন্ধন"], ans: 3, exp: "ব্যাখ্যা: পাইরোসালফিউরিক অ্যাসিড বা পাইরোসালফেট আয়নের গঠনে দুটি সালফার পরমাণু সরাসরি যুক্ত না থেকে একটি অক্সিজেন পরমাণুর মাধ্যমে (S-O-S) যুক্ত থাকে।" },
+            { q: "$H_2S$ গ্যাসকে আম্লিক $K_2Cr_2O_7$ দ্রবণে চালনা করলে দ্রবণের বর্ণ কী হয়?", opts: ["বেগুনি থেকে বর্ণহীন", "কমলা থেকে সবুজ", "হলুদ থেকে কমলা", "অপরিবর্তিত থাকে"], ans: 1, exp: "ব্যাখ্যা: বিজারক $H_2S$ গ্যাস কমলা বর্ণের পটাশিয়াম ডাইক্রোমেট দ্রবণকে বিজারিত করে সবুজ বর্ণের ক্রোমিক সালফেটে পরিণত করে।" },
+            { q: "কোন্ অক্সাইডটি জারক ও বিজারক উভয়রূপেই কাজ করে?", opts: ["$H_2O$", "$CO_2$", "$SO_2$", "$NH_3$"], ans: 2, exp: "ব্যাখ্যা: সালফার ডাইঅক্সাইডে ($SO_2$) সালফারের জারণ অবস্থা +4, যা একটি মধ্যবর্তী অবস্থা। ফলে এটি জারিত বা বিজারিত উভয়ই হতে পারে।" },
+            { q: "নীচের কোন্টি সহজে আর্দ্রবিশ্লেষিত হয় না?", opts: ["$SF_4$", "$SF_6$", "$SOCl_2$", "$SO_2Cl_2$"], ans: 1, exp: "ব্যাখ্যা: $SF_6$ অণুতে সালফারের চারদিকে 6টি ফ্লোরিন পরমাণু এমনভাবে ঘিরে থাকে (স্টেরিক হিনড্রেন্স) যে, জলের অণু কেন্দ্রীয় সালফার পরমাণুকে আক্রমণ করতে পারে না।" }
+        ]
+    },
+    16: {
+        name: 'Set 16', icon: '🧬', topic: 'p-ব্লক মৌলসমূহ (NCERT Exemplar স্পেশাল - I)',
+        questions: [
+            { q: "সাইক্লোট্রাইমেটাফসফরিক অ্যাসিড $(HPO_3)_3$ অণুতে এক-বন্ধন এবং দ্বি-বন্ধনের সংখ্যা যথাক্রমে-", opts: ["3টি ও 3টি", "12টি ও 3টি", "12টি এক-বন্ধন ও দ্বি-বন্ধন নেই", "6টি ও 6টি"], ans: 1, exp: "ব্যাখ্যা: সাইক্লোট্রাইমেটাফসফরিক অ্যাসিডের বলয়াকার গঠনে 3টি P=O দ্বি-বন্ধন থাকে। এছাড়া 3টি P-O-P অক্সিজেন সেতু এবং 3টি P-OH বন্ধন থাকার কারণে মোট এক-বন্ধনের সংখ্যা হয় 12টি।" },
+            { q: "নীচের মৌলগুলির কোন্টি $p\\pi-d\\pi$ বহুবন্ধনে অংশগ্রহণ করতে পারে?", opts: ["কার্বন", "নাইট্রোজেন", "ফসফরাস", "বোরন"], ans: 2, exp: "ব্যাখ্যা: কার্বন, নাইট্রোজেন এবং বোরনের যোজ্যতা কক্ষে কোনো ফাঁকা d-অর্বিট্যাল থাকে না। একমাত্র ফসফরাসের (P) যোজ্যতা কক্ষে ফাঁকা 3d-অর্বিট্যাল থাকায় এটি অক্সিজেনের 2p-অর্বিট্যালের সাথে $p\\pi-d\\pi$ বন্ধন গঠন করতে পারে।" },
+            { q: "N-N এক-বন্ধন, P-P এক-বন্ধন অপেক্ষা-", opts: ["দৃঢ়", "দুর্বল", "সমান শক্তিশালী", "কোনোটিই নয়"], ans: 1, exp: "ব্যাখ্যা: নাইট্রোজেন পরমাণুর আকার অত্যন্ত ছোটো হওয়ায় দুটি N-পরমাণুতে উপস্থিত নিঃসঙ্গ ইলেকট্রন-জোড়গুলির মধ্যে তীব্র বিকর্ষণ ঘটে, ফলে N-N এক-বন্ধন, P-P এক-বন্ধন অপেক্ষা দুর্বল হয়।" },
+            { q: "$H_3PO_3$ (ফসফরাস অ্যাসিড) যৌগের ক্ষারগ্রাহিতা 2 হওয়ার কারণ কী?", opts: ["তিনটি -OH গ্রুপের উপস্থিতি", "দুটি -OH গ্রুপ এবং একটি P-H বন্ধনের উপস্থিতি", "একটি -OH গ্রুপ এবং দুটি P-H বন্ধনের উপস্থিতি", "ফসফরাসের উচ্চ ইলেকট্রন-গ্রহণ এনথ্যালপি"], ans: 1, exp: "ব্যাখ্যা: $H_3PO_3$ অণুতে দুটি P-OH বন্ধন এবং একটি P-H বন্ধন থাকে। শুধুমাত্র অক্সিজেনের সাথে যুক্ত হাইড্রোজেনই (P-OH) আয়নিত হতে পারে, তাই এর ক্ষারগ্রাহিতা বা ক্ষারকীয়তা 2 হয়।" },
+            { q: "লেড নাইট্রেটকে উত্তপ্ত করলে, নাইট্রোজেনের অক্সাইড এবং লেডের অক্সাইড উৎপন্ন হয়। উৎপন্ন অক্সাইডগুলি হল-", opts: ["$N_2O$, PbO", "NO, PbO", "$NO_2$, PbO", "NO, $PbO_2$"], ans: 2, exp: "ব্যাখ্যা: লেড নাইট্রেট $[Pb(NO_3)_2]$-কে তীব্রভাবে উত্তপ্ত করলে এটি বিয়োজিত হয়ে হলুদ রঙের লেড মনোক্সাইড (PbO), বাদামি রঙের নাইট্রোজেন ডাইঅক্সাইড ($NO_2$) গ্যাস এবং অক্সিজেন গ্যাস উৎপন্ন করে।" },
+            { q: "নীচের মৌলগুলির কোন্টি বহুরূপতা (Allotropy) দেখায় না?", opts: ["আর্সেনিক", "নাইট্রোজেন", "বিসমাথ", "অ্যান্টিমনি"], ans: 2, exp: "ব্যাখ্যা: গ্রুপ-15-এর মৌলগুলির মধ্যে বিসমাথ (Bi) একটি প্রকৃত ধাতু। ধাতব চরিত্রের কারণে বিসমাথ কোনো বহুরূপতা বা অ্যালোট্রপি প্রদর্শন করে না।" },
+            { q: "নাইট্রোজেনের সর্বোচ্চ সমযোজ্যতা কত?", opts: ["3", "5", "4", "6"], ans: 2, exp: "ব্যাখ্যা: নাইট্রোজেনের যোজ্যতা কক্ষে একটি 2s এবং তিনটি 2p অর্বিট্যাল (মোট 4টি অর্বিট্যাল) থাকায় এটি সর্বাধিক 4টি সমযোজী বন্ধন তৈরি করতে পারে (যেমন $NH_4^+$ আয়নে)। d-অর্বিট্যাল না থাকায় এটি 5 সমযোজ্যতা দেখাতে পারে না।" },
+            { q: "বিসমাথ +5 জারণ স্তরে, শুধুমাত্র একটি স্থিতিশীল যৌগ গঠন করে। যৌগটি হল-", opts: ["$Bi_2O_5$", "$BiF_5$", "$BiCl_5$", "$Bi_2S_5$"], ans: 1, exp: "ব্যাখ্যা: নিষ্ক্রিয়-জোড় প্রভাবের কারণে বিসমাথের +5 জারণ অবস্থা খুবই অস্থিতিশীল এবং তীব্র জারক। শুধুমাত্র সর্বাধিক তড়িৎ-ঋণাত্মক মৌল ফ্লুরিনের সাথেই এটি +5 জারণ অবস্থায় বিসমাথ পেন্টাফ্লুরাইড ($BiF_5$) গঠন করতে পারে।" },
+            { q: "অ্যামোনিয়াম ডাইক্রোমেট $[(NH_4)_2Cr_2O_7]$ ও বেরিয়াম অ্যাজাইডকে $[Ba(N_3)_2]$ পৃথক পৃথকভাবে উত্তপ্ত করলে পাওয়া যায়-", opts: ["উভয়ক্ষেত্রেই $N_2$", "$(NH_4)_2Cr_2O_7$ থেকে $N_2$, $Ba(N_3)_2$ থেকে NO", "$(NH_4)_2Cr_2O_7$ থেকে $N_2O$, $Ba(N_3)_2$ থেকে $N_2$", "$(NH_4)_2Cr_2O_7$ থেকে $N_2O$, $Ba(N_3)_2$ থেকে $NO_2$"], ans: 0, exp: "ব্যাখ্যা: অ্যামোনিয়াম ডাইক্রোমেট উত্তপ্ত করলে বিয়োজিত হয়ে নাইট্রোজেন ($N_2$) গ্যাস দেয়। অন্যদিকে, বেরিয়াম অ্যাজাইডকে উত্তপ্ত করলে তা বিশুদ্দ নাইট্রোজেন গ্যাস এবং বেরিয়াম ধাতু উৎপন্ন করে।" },
+            { q: "$NaH_2PO_2$ যৌগটির অ্যানায়ন-মধ্যস্থ কেন্দ্রীয় পরমাণুর জারণ-সংখ্যা কত?", opts: ["+3", "+5", "+1", "-3"], ans: 2, exp: "ব্যাখ্যা: সোডিয়াম হাইপোফসফাইট ($NaH_2PO_2$) লবণে অ্যানায়নটি হলো হাইপোফসফাইট আয়ন ($H_2PO_2^-$)। এখানে ফসফরাসের জারণ সংখ্যা: $2(+1) + x + 2(-2) = -1$, বা $x = +1$।" },
+            { q: "নীচের কোন্ দুটি সালফারের পারক্সোঅ্যাসিড?", opts: ["$H_2SO_5$ এবং $H_2S_2O_8$", "$H_2SO_5$ এবং $H_2S_2O_7$", "$H_2S_2O_7$ এবং $H_2S_2O_8$", "$H_2S_2O_6$ এবং $H_2S_2O_7$"], ans: 0, exp: "ব্যাখ্যা: ক্যারোর অ্যাসিড বা পারক্সোমনোসালফিউরিক অ্যাসিড ($H_2SO_5$) এবং মার্শালের অ্যাসিড বা পারক্সোডাইসালফিউরিক অ্যাসিড ($H_2S_2O_8$) উভয় যৌগের গঠনেই পারক্সো-বন্ধন (-O-O-) বর্তমান থাকে।" },
+            { q: "উত্তপ্ত গাঢ় $H_2SO_4$ মোটামুটি তীব্র জারক পদার্থ। নীচের কোন্ মৌলটি গাঢ় $H_2SO_4$ দ্বারা জারিত হয়ে দুটি গ্যাসীয় বিক্রিয়াজাত পদার্থ উৎপন্ন করে?", opts: ["Cu", "S", "C", "Zn"], ans: 2, exp: "ব্যাখ্যা: কার্বনকে গাঢ় সালফিউরিক অ্যাসিড সহযোগে উত্তপ্ত করলে কার্বন জারিত হয়ে কার্বন ডাইঅক্সাইড ($CO_2$) গ্যাস উৎপন্ন করে এবং সালফিউরিক অ্যাসিড বিজারিত হয়ে সালফার ডাইঅক্সাইড ($SO_2$) গ্যাস উৎপন্ন করে।" },
+            { q: "কঠিন অবস্থায় $PCl_5$ কীরূপে অবস্থান করে?", opts: ["সমযোজী কঠিন", "অষ্টতলকীয় কঠিন অণু", "চতুস্তলকীয় $[PCl_4]^+$ ও অষ্টতলকীয় $[PCl_6]^-$ সমন্বিত আয়নীয় কঠিন", "সরলরৈখিক আয়নীয় কঠিন"], ans: 2, exp: "ব্যাখ্যা: ফসফরাস পেন্টাক্লোরাইড গ্যাসীয় বা তরল অবস্থায় সমযোজী হলেও, কঠিন অবস্থায় এটি স্বতঃআয়নিত হয়ে টেট্রাহেড্রাল $[PCl_4]^+$ ক্যাটায়ন এবং অক্টাহেড্রাল $[PCl_6]^-$ অ্যানায়ন গঠন করে আয়নীয় কঠিন হিসেবে অবস্থান করে।" },
+            { q: "বিজারণ বিভবের ($E^0$) ভিত্তিতে অ্যানায়নগুলির জারণ ক্ষমতার সঠিক ক্রম হল- (দেওয়া আছে: $E^0$ $ClO_4^-$ = 1.19V, $IO_4^-$ = 1.65V, $BrO_4^-$ = 1.74V)", opts: ["$ClO_4^- > IO_4^- > BrO_4^-$", "$IO_4^- > BrO_4^- > ClO_4^-$", "$BrO_4^- > IO_4^- > ClO_4^-$", "$BrO_4^- > ClO_4^- > IO_4^-$"], ans: 2, exp: "ব্যাখ্যা: যে যৌগের বা আয়নের বিজারণ বিভবের (Standard reduction potential) মান যত বেশি ধনাত্মক, তার জারণ ক্ষমতা তত বেশি হয়। তাই সঠিক ক্রম হলো $BrO_4^- > IO_4^- > ClO_4^-$।" },
+            { q: "নীচের কোন্ জোড়টি আইসোইলেকট্রনিক (Isoelectronic)?", opts: ["$ICl_2^-, ClO_2$", "$BrO_2^-, BrF_2^+$", "$ClO_2, BrF$", "$CN^-, O_3$"], ans: 1, exp: "ব্যাখ্যা: $BrO_2^-$ আয়নে যোজ্যতা ইলেকট্রন = 7 + (2×6) + 1 = 20টি। আবার $BrF_2^+$ আয়নে যোজ্যতা ইলেকট্রন = 7 + (2×7) - 1 = 20টি। যোজ্যতা ইলেকট্রন সংখ্যা সমান হওয়ায় এরা আইসোইলেকট্রনিক।" }
+        ]
+    },
+    17: {
+        name: 'Set 17', icon: '🔬', topic: 'p-ব্লক মৌলসমূহ (NCERT Exemplar স্পেশাল - II ও HOTS)',
+        questions: [
+            { q: "সাদা ফসফরাসের $P_4$ অণুর ক্ষেত্রে নীচের কোনটি সঠিক?", opts: ["এতে 6 জোড়া নিঃসঙ্গ ইলেকট্রন আছে", "এতে 6 টি P-P এক-বন্ধন আছে", "এতে 3 টি P-P এক-বন্ধন আছে", "এতে 4 টি P=P দ্বি-বন্ধন আছে"], ans: 1, exp: "ব্যাখ্যা: সাদা ফসফরাসের $P_4$ অণুর গঠন একটি চতুস্তলকীয় খাঁচার মতো। এতে 4টি ফসফরাস পরমাণু নিজেদের মধ্যে 6টি P-P সমযোজী এক-বন্ধন গঠন করে যুক্ত থাকে।" },
+            { q: "নীচের কোন্ বিক্রিয়াটিতে গাঢ় $H_2SO_4$ জারক হিসেবে ব্যবহৃত হয়?", opts: ["$CaF_2 + H_2SO_4 \\rightarrow CaSO_4 + 2HF$", "$2HI + H_2SO_4 \\rightarrow I_2 + SO_2 + 2H_2O$", "$Cu + 2H_2SO_4 \\rightarrow CuSO_4 + SO_2 + 2H_2O$", "খ এবং গ উভয়ই"], ans: 3, exp: "ব্যাখ্যা: Cu-এর সাথে বিক্রিয়ায় $H_2SO_4$ নিজে বিজারিত হয়ে $SO_2$ তৈরি করে এবং Cu-কে জারিত করে। একইভাবে HI-কে জারিত করে $I_2$ মুক্ত করে। উভয় ক্ষেত্রেই এটি জারক দ্রব্যরূপে কাজ করে।" },
+            { q: "জলে নোব্‌ল্ গ্যাসগুলির (যেমন He, Ar, Kr) দ্রাব্যতার প্রধান কারণ কী?", opts: ["সমযোজী বন্ধন গঠন", "হাইড্রোজেন বন্ধন গঠন", "দ্বিমেরু-আবিষ্ট দ্বিমেরু মিথস্ক্রিয়া", "আয়ন-দ্বিমেরু আকর্ষণ"], ans: 2, exp: "ব্যাখ্যা: নোব্‌ল্ গ্যাসগুলি অধ্রুবীয় অণু। কিন্তু পোলার জলের অণুর সংস্পর্শে এলে এদের প্রতিসম ইলেকট্রন মেঘ সাময়িকভাবে বিকৃত হয় এবং একটি আবিষ্ট দ্বিমেরু (induced dipole) তৈরি হয়, যা জলে দ্রবীভূত হতে সাহায্য করে।" },
+            { q: "হ্যালোজেন পরমাণুগুলির আকার বৃদ্ধির সঙ্গে H-X বন্ধন-দৈর্ঘ্য বৃদ্ধি পায় এবং-", opts: ["বন্ধন-বিয়োজন শক্তি ক্রমশ হ্রাস পায়", "তাপীয় স্থায়িত্ব বৃদ্ধি পায়", "বিজারণ ক্ষমতা হ্রাস পায়", "আম্লিক ক্ষমতা হ্রাস পায়"], ans: 0, exp: "ব্যাখ্যা: ফ্লুরিন থেকে আয়োডিন পর্যন্ত পরমাণুর আকার বাড়ার সাথে সাথে H-X বন্ধন-দৈর্ঘ্য বৃদ্ধি পায়। দীর্ঘ বন্ধন দুর্বল হওয়ায় এদের বন্ধন-বিয়োজন এনথ্যালপি বা ভাঙার শক্তি ক্রমশ হ্রাস পায়।" },
+            { q: "$PCl_5$ যৌগে দুই ধরনের P-Cl বন্ধন (অ্যাক্সিয়াল এবং ইকুয়েটোরিয়াল) বর্তমান, কারণ-", opts: ["অ্যাক্সিয়াল বন্ধনগুলি ইকুয়েটোরিয়াল বন্ধন অপেক্ষা অধিক বিকর্ষণ অনুভব করে", "ইকুয়েটোরিয়াল বন্ধনগুলি অধিক বিকর্ষণ অনুভব করে", "P-পরমাণুর সংকরায়ণ $sp^3d^2$", "এটি একটি আয়নীয় যৌগ"], ans: 0, exp: "ব্যাখ্যা: ত্রিকোণীয় দ্বি-পিরামিডীয় গঠনে 2টি অক্ষীয় (axial) বন্ধন 3টি নিরক্ষীয় (equatorial) বন্ধনের $90^\\circ$ কোণে থাকায় অধিক বিকর্ষণ অনুভব করে, ফলে অক্ষীয় বন্ধনগুলি নিরক্ষীয় বন্ধন অপেক্ষা দৈর্ঘ্যে বড়ো হয়।" },
+            { q: "$SF_6$ সাধারণ অবস্থায় আর্দ্রবিশ্লেষিত হয় না কিন্তু $SF_4$ আর্দ্রবিশ্লেষিত হয়, কারণ-", opts: ["$SF_6$-এ সালফারের জারণ সংখ্যা বেশি", "$SF_6$-এর 6টি F-পরমাণু সালফারের ওপর জলের আক্রমণকে স্টেরিক্যালি প্রতিরোধ করে", "$SF_4$ একটি গ্যাস", "$SF_6$ একটি সমযোজী যৌগ"], ans: 1, exp: "ব্যাখ্যা: $SF_6$ অণুতে সালফারের চারদিকে 6টি ফ্লোরিন পরমাণু এমনভাবে ঘিরে থাকে (স্টেরিক হিনড্রেন্স) যে, জলের অণু কেন্দ্রীয় সালফার পরমাণুকে আক্রমণ করতে পারে না।" },
+            { q: "আয়োডিন $IF_7$ তৈরি করতে পারলেও ব্রোমিন $BrF_7$ তৈরি করতে পারে না, কারণ-", opts: ["ব্রোমিনের তড়িৎ-ঋণাত্মকতা বেশি", "আয়োডিনের যোজ্যতা কক্ষে 7টি ইলেকট্রন আছে", "ব্রোমিনের আকার ছোটো হওয়ায় 7টি ফ্লোরিন পরমাণুর স্থান সংকুলান সম্ভব নয়", "ব্রোমিন একটি তরল পদার্থ"], ans: 2, exp: "ব্যাখ্যা: আয়োডিন পরমাণুর আকার যথেষ্ট বড়ো হওয়ায় এটি সহজেই 7টি ছোট ফ্লোরিন পরমাণুকে নিজের চারদিকে স্থান দিতে পারে। ব্রোমিনের আকার ছোটো হওয়ায় স্টেরিক বিকর্ষণের কারণে $BrF_7$ গঠিত হয় না।" },
+            { q: "$XeF_6$-কে সাধারণ কাঁচের পাত্রে রাখা যায় ভাবনা, কারণ-", opts: ["এটি কাঁচকে গলিয়ে দেয়", "এটি বাষ্পীভূত হয়ে যায়", "এটি কাচের $SiO_2$-এর সাথে বিক্রিয়া করে $XeOF_4$ উৎপন্ন করে", "এটি বিস্ফোরক"], ans: 2, exp: "ব্যাখ্যা: $XeF_6$ কাচের উপাদান সিলিকার সাথে রাসায়নিক বিক্রিয়া ঘটিয়ে জেনন অক্সোটেট্রাফ্লুরাইড ($XeOF_4$) এবং সিলিকন টেট্রাফ্লুরাইড ($SiF_4$) গ্যাস তৈরি করে, তাই একে কাচের পাত্রে সংরক্ষণ করা হয় না।" },
+            { q: "$H_2S$ গ্যাসকে আম্লিক $K_2Cr_2O_7$ (পটাশিয়াম ডাইক্রোমেট) দ্রবণে চালনা করলে দ্রবণের বর্ণ কী হয়?", opts: ["বেগুনি থেকে বর্ণহীন", "কমলা থেকে সবুজ", "হলুদ থেকে কমলা", "অপরিবর্তিত থাকে"], ans: 1, exp: "ব্যাখ্যা: বিজারক $H_2S$ গ্যাস কমলা বর্ণের পটাশিয়াম ডাইক্রোমেট দ্রবণকে বিজারিত করে সবুজ বর্ণের ক্রোমিক সালফেটে পরিণত করে এবং নিজে জারিত হয়ে সালফার অধঃক্ষেপ দেয়।" },
+            { q: "ওজোন অণুর ($O_3$) জ্যামিতিক আকৃতি কীরূপ?", opts: ["সরলরৈখিক", "সমতলীয় ত্রিভুজাকার", "কৌণিক বা V-আকৃতির", "পিরামিডীয়"], ans: 2, exp: "ব্যাখ্যা: ওজোন অণুর কেন্দ্রীয় অক্সিজেন পরমাণুটি $sp^2$ সংকরায়িত এবং এতে একটি লোন-পেয়ার ইলেকট্রন থাকায় অণুটির আকৃতি কৌণিক বা বent (bent) হয়, যার বন্ধন কোণ প্রায় 116.8°।" },
+            { q: "জেননের কোন্ যৌগটির আকৃতি সরলরৈখিক?", opts: ["$XeO_3$", "$XeOF_2$", "$XeF_4$", "$XeF_2$"], ans: 3, exp: "ব্যাখ্যা: $XeF_2$ অণুতে জেননের $sp^3d$ সংকরায়ণ ঘটে। এতে তিনটি লোন-পেয়ার নিরক্ষীয় (equatorial) অবস্থানে থাকায় ফ্লোরিন পরমাণু দুটি অক্ষীয় (axial) অবস্থানে 180° কোণে থাকে, ফলে এর গঠন সরলরৈখিক হয়।" },
+            { q: "কোন্ নিষ্ক্রিয় গ্যাসটি তেজস্ক্রিয় (Radioactive)?", opts: ["ক্রিপ্টন", "জেনন", "রেডন", "আর্গন"], ans: 2, exp: "ব্যাখ্যা: গ্রুপ-18 এর সর্বশেষ প্রাকৃতিক মৌল রেডন (Rn) হলো একটি তেজস্ক্রিয় নিষ্ক্রিয় গ্যাস। এটি প্রধানত রেডিয়ামের তেজস্ক্রিয় ভাঙনের ফলে উৎপন্ন হয়।" },
+            { q: "$P_4O_{10}$ যৌগে P-O-P লিংকেজ বা সেতুবন্ধনের সংখ্যা কত?", opts: ["4", "5", "6", "8"], ans: 2, exp: "ব্যাখ্যা: ফসফরাস পেন্টক্সাইডের খাঁচার মতো ত্রিমাত্রিক গঠনে ৪টি ফসফরাস পরমাণু পরস্পর ৬টি অক্সিজেন সেতুর (P-O-P) সাহায্যে একে অপরের সাথে যুক্ত থাকে।" },
+            { q: "$H_3PO_3$ (ফসফরাস অ্যাসিড)-কে উত্তপ্ত করলে এটি অসমঞ্জস (Disproportionation) বিক্রিয়ায় অংশগ্রহণ করে কোন কোন পদার্থ উৎপন্ন করে?", opts: ["$H_3PO_4$ এবং $P_2O_5$", "$PH_3$ এবং $H_3PO_4$", "$PH_3$ এবং $P_2O_3$", "$H_4P_2O_7$ এবং জল"], ans: 1, exp: "ব্যাখ্যা: ফসফরাস অ্যাসিডে P-এর জারণ অবস্থা +3। উত্তপ্ত করলে এটি বিজারিত হয়ে ফসফিন গ্যাস (-3) এবং জারিত হয়ে ফসফরিক অ্যাসিড (+5) উৎপন্ন করে।" },
+            { q: "সাদা ফসফরাস এবং লাল ফসফরাসের মধ্যে কোনটি বেশি সক্রিয়?", opts: ["লাল ফসফরাস", "সাদা ফসফরাস", "উভয়েই সমান সক্রিয়", "কোনোটিই বিক্রিয়া করে না"], ans: 1, exp: "ব্যাখ্যা: সাদা ফসফরাসের $P_4$ অণুতে P-P-P বন্ধন কোণ মাত্র $60^\\circ$ হওয়ায় এতে তীব্র কৌণিক পীড়ন (angle strain) কাজ করে, যার ফলে এটি অত্যন্ত অস্থিতিশীল ও রাসায়নিকভাবে তীব্র সক্রিয় হয়।" }
+        ]
+    },
+    18: {
+        name: 'Set 18', icon: '🧩', topic: 'p-ব্লক মৌলসমূহ (Miscellaneous Advanced)',
+        questions: [
+            { q: "$P_4O_6$ (ফসফরাস ট্রাইঅক্সাইড) যৌগে P-O-P বন্ধনের সংখ্যা কয়টি?", opts: ["4 টি", "5 টি", "6 টি", "8 টি"], ans: 2, exp: "ব্যাখ্যা: $P_4O_{10}$-এর মতোই $P_4O_6$ যৌগেও 4টি ফসফরাস পরমাণু 6টি P-O-P অক্সিজেন সেতুর মাধ্যমে পরস্পর যুক্ত হয়ে একটি খাঁচার মতো গঠন তৈরি করে।" },
+            { q: "সুপার হ্যালোজেন (Super Halogen) মৌল কোনটি?", opts: ["ক্লোরিন", "ব্রোমিন", "আয়োডিন", "ফ্লুরিন"], ans: 3, exp: "ব্যাখ্যা: ফ্লুরিনের সর্বোচ্চ তড়িৎ-ঋণাত্মকতা, ক্ষুদ্রতম আকার এবং অত্যন্ত উচ্চ রাসায়নিক সক্রিয়তার কারণে একে হ্যালোজেন পরিবারের 'সুপার হ্যালোজেন' আখ্যা দেওয়া হয়েছে।" },
+            { q: "গ্রুপ-15 এর হ্যালাইডগুলির মধ্যে কোন্ যৌগটির অস্তিত্ব নেই?", opts: ["$AsF_5$", "$SbF_5$", "$PF_5$", "$NF_5$"], ans: 3, exp: "ব্যাখ্যা: নাইট্রোজেন (N) দ্বিতীয় পর্যায়ের মৌল হওয়ায় এর যোজ্যতা কক্ষে কোনো ফাঁকা d-অর্বিট্যাল থাকে না। তাই এটি অষ্টকের প্রসারণ ঘটিয়ে 5টি সমযোজী বন্ধন তৈরি করতে পারে না।" },
+            { q: "আন্তঃহ্যালোজেন যৌগসমূহের (Interhalogen compounds) মধ্যে কোন্ যৌগটি গঠন হওয়া সম্ভব নয়?", opts: ["$IF_7$", "$ICl_5$", "$BrF_2$", "$ClF_3$"], ans: 2, exp: "ব্যাখ্যা: আন্তঃহ্যালোজেন যৌগের সাধারণ সংকেত হলো $XX'_n$ , যেখানে n সর্বদা একটি বিজোড় সংখ্যা (1, 3, 5, 7) হয়। তাই n=2 হওয়ায় $BrF_2$ যৌগটি গঠিত হতে পারে না।" },
+            { q: "$XeF_6$-এর আর্দ্রবিশ্লেষণে কোন্ যৌগটি গঠিত হয় না?", opts: ["$XeO_3$", "$XeOF_4$", "$XeO_4$", "$XeO_2F_2$"], ans: 2, exp: "ব্যাখ্যা: জেনন হেক্সাফ্লুরাইডের আংশিক আর্দ্রবিশ্লেষণে $XeOF_4$ ও $XeO_2F_2$ এবং সম্পূর্ণ আর্দ্রবিশ্লেষণে $XeO_3$ উৎপন্ন হয়। কিন্তু কোনোভাবেই $XeO_4$ পাওয়া যায় না।" },
+            { q: "জেনন টেট্রক্সাইড ($XeO_4$) অণুর গঠনাকৃতি কীরূপ?", opts: ["চতুস্তলকীয়", "সমতলীয় বর্গাকার", "পিরামিডীয়", "অষ্টতলকীয়"], ans: 0, exp: "ব্যাখ্যা: $XeO_4$ অণুতে জেনন পরমাণুর সংকরায়ণ $sp^3$ এবং এতে কোনো লোন-পেয়ার ইলেকট্রন অবশিষ্ট থাকে না। তাই এর আকৃতি নিখুঁত চতুস্তলকীয় (Tetrahedral) হয়।" },
+            { q: "কোন্ জেনন অক্সোফ্লুরাইড যৌগটির গঠন 'T' আকৃতিবিশিষ্ট (T-shaped)?", opts: ["$XeOF_4$", "$XeO_2F_2$", "$XeO_3F_2$", "$XeOF_2$"], ans: 3, exp: "ব্যাখ্যা: $XeOF_2$ অণুতে কেন্দ্রীয় Xe পরমাণুর সংকরায়ণ $sp^3d$ এবং এতে ২টি লোন-পেয়ার থাকে। এই লোন-পেয়ারগুলি নিরক্ষীয় অবস্থান দখল করায় অণুটির আকৃতি T-এর মতো হয়।" },
+            { q: "কোন্ নিষ্ক্রিয় গ্যাসটি জলের সাথে বা অন্য অণুর খাঁচার মধ্যে আবদ্ধ হয়ে ক্ল্যাথরেট (Clathrate) যৌগ গঠন করতে পারে না?", opts: ["আর্গন (Ar)", "ক্রিপ্টন (Kr)", "জেনন (Xe)", "হিলিয়াম (He)"], ans: 3, exp: "ব্যাখ্যা: হিলিয়াম ও নিয়ন অণু আকারে অত্যন্ত ক্ষুদ্র হওয়ার কারণে এরা জলের বা কুইনলের কেলাস জালকের শূন্যস্থানে (খাঁচায়) আটকে থাকতে পারে না এবং বেরিয়ে যায়। তাই এরা ক্ল্যাথরেট যৌগ তৈরি করে না।" },
+            { q: "লাফিং গ্যাস (Laughing gas) নামে পরিচিত যৌগটি কোনটি?", opts: ["NO", "$N_2O$", "$NO_2$", "$N_2O_3$"], ans: 1, exp: "ব্যাখ্যা: নাইট্রাস অক্সাইডকে ($N_2O$) প্রশ্বাস হিসেবে সামান্য পরিমাণে গ্রহণ করলে মানুষের স্নায়ুতন্ত্রে হালকা হাসির উদ্রেক হয়, তাই একে লাফিং গ্যাস বলে।" },
+            { q: "নাইট্রিক অ্যাসিডের ($HNO_3$) অ্যানহাইড্রাইড কোনটি?", opts: ["$NO_2$", "$N_2O_3$", "$N_2O_4$", "$N_2O_5$"], ans: 3, exp: "ব্যাখ্যা: ডাইনাইট্রোজেন পেন্টক্সাইড ($N_2O_5$) জলের সাথে বিক্রিয়া করে নাইট্রিক অ্যাসিড ($HNO_3$) উৎপন্ন করে। তাই এটি নাইট্রিক অ্যাসিডের অ্যানহাইড্রাইড।" },
+            { q: "অর্থোফসফরিক অ্যাসিড ($H_3PO_4$)-এর ক্ষারগ্রাহিতা কত?", opts: ["1", "2", "3", "4"], ans: 2, exp: "ব্যাখ্যা: অর্থোফসফরিক অ্যাসিডে 3টি প্রতিস্থাপনযোগ্য P-OH বন্ধন থাকে। এর ফলে এটি তিনটি ধাপে তিনটি প্রোটন ($H^+$) ত্যাগ করতে পারে, তাই এর ক্ষারগ্রাহিতা 3।" },
+            { q: "হাইপোফসফরাস অ্যাসিড ($H_3PO_2$)-এর ক্ষারগ্রাহিতা কত?", opts: ["1", "2", "3", "0"], ans: 0, exp: "ব্যাখ্যা: হাইপোফসফরাস অ্যাসিডের গঠনে শুধুমাত্র 1টি P-OH বন্ধন এবং 2টি P-H বন্ধন থাকে। তাই এটি জলীয় দ্রবণে মাত্র 1টি প্রোটন দান করতে পারে এবং এর ক্ষারগ্রাহিতা 1 হয়।" },
+            { q: "সমুদ্রে বিপদ সংকেত দেওয়ার জন্য হোমস্ সিগন্যাল (Holme's signal)-এ কোন মিশ্রণটি ব্যবহার করা হয়?", opts: ["$CaCO_3$ এবং $Ca_3P_2$", "$Ca_3P_2$ এবং $CaC_2$", "$Ca_3(PO_4)_2$ এবং $CaI_2$", "$CaC_2$ এবং $CaCO_3$"], ans: 1, exp: "ব্যাখ্যা: ক্যালশিয়াম ফসফাইড ($Ca_3P_2$) এবং ক্যালশিয়াম কার্বাইডের ($CaC_2$) মিশ্রণ জলের সংস্পর্শে এলে যথাক্রমে ফসফিন এবং অ্যাসিটিলিন গ্যাস উৎপন্ন করে যা জ্বলে উঠে ধোঁয়ার সিগন্যাল তৈরি করে।" },
+            { q: "মাইক্রোকসমিক লবণ (Microcosmic salt)-এর সংকেত কী?", opts: ["$(NH_4)_2SO_4$", "$(NH_4)_3PO_4$", "$Na(NH_4)HPO_4$", "$Na_2HPO_4$"], ans: 2, exp: "ব্যাখ্যা: সোডিয়াম অ্যামোনিয়াম হাইড্রোজেন ফসফেটকে মাইক্রোকসমিক লবণ বলা হয়। এটি পরীক্ষাগারে ব্লোপাইপ বিশ্লেষণে ব্যবহৃত হয়।" },
+            { q: "নাইট্রোজেন ডাইঅক্সাইড ($NO_2$) গ্যাসটিকে সাধারণ তাপমাত্রার নিচে ঠান্ডা করলে এটি কোন বর্ণহীন তরল বা কঠিনে পরিণত হয়?", opts: ["$N_2O$", "$N_2O_3$", "$N_2O_4$", "$N_2O_5$"], ans: 2, exp: "ব্যাখ্যা: বাদামি রঙের $NO_2$ গ্যাসকে ঠান্ডা করলে দুটি অণু যুক্ত হয়ে ডাইমার গঠন করে এবং বর্ণহীন ডাইনাইট্রোজেন টেট্রক্সাইড ($N_2O_4$) উৎপন্ন করে।" }
+        ]
+    },
+    19: {
+        name: 'Set 19', icon: '🌟', topic: 'p-ব্লক মৌলসমূহ (কারণ ও ব্যাখ্যা ভিত্তিক প্রশ্ন)',
+        questions: [
+            { q: "আর্সেনিক (As) থেকে বিসমাথে (Bi) পারমাণবিক ব্যাসার্ধ বৃদ্ধি অপেক্ষাকৃত অনেক কম হয়, কারণ-", opts: ["ইলেকট্রন-আসক্তি বৃদ্ধি পায়", "অন্তর্বর্তী কক্ষের d এবং f ইলেকট্রনের দুর্বল আবরণী প্রভাব বর্তমান", "এদের তড়িৎ-ঋণাত্মকতা সমান", "এদের ধাতব চরিত্র হ্রাস পায়"], ans: 1, exp: "ব্যাখ্যা: d এবং f উপকক্ষের ইলেকট্রনগুলির আবরণী প্রভাব (shielding effect) অত্যন্ত কম হওয়ায় নিউক্লিয়াসের কার্যকরী চার্জ বৃদ্ধি পায়, যা সর্ববহিস্থ কক্ষের ইলেকট্রনকে ভেতরের দিকে আকর্ষণ করে ব্যাসার্ধ বৃদ্ধিকে বাধা দেয়।" },
+            { q: "কার্বনের তুলনায় গ্রুপ-15 মৌলগুলির ক্যাটিনেশন ধর্ম (catenation property) অনেক কম, কারণ-", opts: ["গ্রুপ-15 মৌলগুলির আকার অনেক বড়ো", "গ্রুপ-15 মৌলের নিজেদের মধ্যে বন্ধন-বিয়োজন শক্তি C-C বন্ধন শক্তি অপেক্ষা অনেক কম", "কার্বনের তড়িৎ-ঋণাত্মকতা বেশি", "গ্রুপ-15 মৌলগুলি অধাতু"], ans: 1, exp: "ব্যাখ্যা: ক্যাটিনেশন ধর্ম নির্ভর করে মৌলের নিজস্ব এক-বন্ধন শক্তির ওপর। N-N বা P-P বন্ধন শক্তি C-C বন্ধন শক্তি (348 kJ/mol) অপেক্ষা অনেক কম হওয়ায় এদের ক্যাটিনেশন ধর্ম দুর্বল হয়।" },
+            { q: "$S_2O_6^{2-}$ (ডাইথায়োনেট) আয়নে S-S সরাসরি বন্ধন বর্তমান, কিন্তু $S_2O_7^{2-}$ (পাইরোসালফেট) আয়নে কোন বন্ধন বর্তমান থাকে?", opts: ["S-S বন্ধন", "S=S দ্বি-বন্ধন", "-O-O- পারক্সো বন্ধন", "S-O-S অক্সিজেন সেতু বন্ধন"], ans: 3, exp: "ব্যাখ্যা: পাইরোসালফিউরিক অ্যাসিড ($H_2S_2O_7$) বা পাইরোসালফেট আয়নের গঠনে দুটি সালফার পরমাণু সরাসরি যুক্ত না থেকে একটি অক্সিজেন পরমাণুর মাধ্যমে (S-O-S) যুক্ত থাকে।" },
+            { q: "হাইড্রোজেন সালফাইড ($H_2S$) গ্যাসকে লঘু বা গাঢ় নাইট্রিক অ্যাসিডের ($HNO_3$) মধ্যে চালনা করলে কী উৎপন্ন হয়?", opts: ["সালফার ডাইঅক্সাইড ($SO_2$)", "সালফার ট্রাইঅক্সাইড ($SO_3$)", "কোলয়ডীয় সালফার (S)", "সালফিউরিক অ্যাসিড ($H_2SO_4$)"], ans: 2, exp: "ব্যাখ্যা: নাইট্রিক অ্যাসিড একটি তীব্র জারক। এটি $H_2S$ গ্যাসকে জারিত করে সালফারের অধঃক্ষেপ বা কোলয়ডীয় সালফার উৎপন্ন করে এবং নিজে বিজারিত হয়ে NO বা $NO_2$ গ্যাস নির্গত করে।" },
+            { q: "$PCl_5$ সমযোজী গ্যাসীয় ও তরল অবস্থায় থাকে, কিন্তু কঠিন অবস্থায় এটি আয়নীয় হয়। কারণ কঠিন অবস্থায় এটি কীরূপে থাকে?", opts: ["$[PCl_3]^{2+}$ এবং $[PCl_7]^{2-}$ আয়নরূপে", "$[PCl_4]^+$ এবং $[PCl_6]^-$ আয়নরূপে", "$P^{5+}$ এবং $5Cl^-$ আয়নরূপে", "$[PCl_4]^+$ এবং $Cl^-$ আয়নরূপে"], ans: 1, exp: "ব্যাখ্যা: কঠিন অবস্থায় $PCl_5$ স্বতঃআয়নিত হয়ে স্থিতিশীল চতুস্তলকীয় ক্যাটায়ন $[PCl_4]^+$ এবং অষ্টতলকীয় অ্যানায়ন $[PCl_6]^-$ তৈরি করে কেলাস গঠন করে।" },
+            { q: "কোন্ নিষ্ক্রিয় গ্যাসটি তেজস্ক্রিয়তা সম্পর্কিত গবেষণায় এবং রেডিওথেরাপিতে ক্যানসারের চিকিৎসায় ব্যবহৃত হয়?", opts: ["হিলিয়াম (He)", "আর্গন (Ar)", "ক্রিপ্টন (Kr)", "রেডন (Rn)"], ans: 3, exp: "ব্যাখ্যা: রেডন একটি প্রাকৃতিক তেজস্ক্রিয় নিষ্ক্রিয় গ্যাস। এর তেজস্ক্রিয় বিকিরণ ধর্মকে কাজে লাগিয়ে ক্যানসারের মতো রোগের চিকিৎসায় (রেডিয়েশন থেরাপি) এটি ব্যবহৃত হয়।" },
+            { q: "কোন্ জেনন ফ্লুরাইডটি জৈব যৌগের সংশ্লেষণে বিকারক (fluorinating agent) হিসেবে ব্যাপকভাবে ব্যবহৃত হয়?", opts: ["$XeF_4$", "$XeF_6$", "$XeF_2$", "$XeOF_4$"], ans: 2, exp: "ব্যাখ্যা: জেনন ডাইফ্লুরাইড ($XeF_2$) একটি চমৎকার, মৃদু ও সুবিধাজনক ফ্লুরিনেটিং বিকারক হিসেবে জৈব রসায়নে ব্যবহৃত হয়।" },
+            { q: "গভীর সমুদ্রে ডুবুরিরা শ্বাসকার্যের জন্য অক্সিজেন ও হিলিয়ামের মিশ্রণ ব্যবহার করেন, এর প্রধান কারণ কী?", opts: ["হিলিয়াম অক্সিজেনের চেয়ে হালকা", "উচ্চ চাপে রক্তে হিলিয়ামের দ্রাব্যতা নাইট্রোজেনের চেয়ে অনেক কম", "হিলিয়াম শ্বাস-প্রশ্বাসে সুগন্ধি দেয়", "হিলিয়াম অক্সিজেনের সাথে বিক্রিয়া করে না"], ans: 1, exp: "ব্যাখ্যা: গভীর সমুদ্রে উচ্চ চাপে নাইট্রোজেন রক্তে দ্রবীভূত হয়ে যায় এবং উপরে উঠলে বুদবুদ সৃষ্টি করে মারাত্মক 'বেন্ডস' (bends) রোগের সৃষ্টি করে। হিলিয়াম রক্তে প্রায় অদ্রাব্য হওয়ায় এই ঝুঁকি থাকে না।" },
+            { q: "রকেটের জ্বালানিতে জারক পদার্থ (oxidizer) হিসেবে কোন্ অ্যাসিডটি ব্যবহৃত হয়?", opts: ["$H_2SO_4$", "$HClO_4$", "$HNO_3$", "$H_3PO_4$"], ans: 2, exp: "ব্যাখ্যা: নাইট্রিক অ্যাসিড ($HNO_3$) অত্যন্ত তীব্র জারক হওয়ায় তরল ডাইঅক্সিজেনের পাশাপাশি এটিও রকেটের চালিকাশক্তির জ্বালানিতে জারক হিসেবে কাজ করে।" },
+            { q: "$XeF_4$ অণুতে জেনন পরমাণুর সংকরায়ণ অবস্থা কী?", opts: ["$sp^3$", "$sp^3d$", "$sp^3d^2$", "$sp^3d^3$"], ans: 2, exp: "ব্যাখ্যা: জেনন টেট্রাফ্লুরাইড ($XeF_4$) অণুতে জেনন পরমাণুর চারদিকে 4টি বন্ড-পেয়ার এবং 2টি লোন-পেয়ার থাকে (মোট 6টি জোড়)। তাই এর সংকরায়ণ $sp^3d^2$ এবং আকৃতি সমতলীয় বর্গাকার হয়।" },
+            { q: "লেড অ্যাসিটেট কাগজকে কালো করে দেয় কোন গ্যাসটি?", opts: ["$SO_2$", "$Cl_2$", "$H_2S$", "$CO_2$"], ans: 2, exp: "ব্যাখ্যা: হাইড্রোজেন সালফাইড ($H_2S$) গ্যাস লেড অ্যাসিটেট দ্বারা সিক্ত কাগজের সংস্পর্শে এলে লেড সালফাইডের (PbS) কালো অধঃক্ষেপ সৃষ্টি করে, ফলে কাগজটি কালো হয়ে যায়।" },
+            { q: "নেসলার বিকারকের ক্ষারীয় দ্রবণ কোন্ গ্যাস শনাক্তকরণে ব্যবহৃত হয়?", opts: ["$NO_2$", "$NH_3$ (অ্যামোনিয়া)", "$PH_3$ (ফসফিন)", "$SO_2$"], ans: 1, exp: "ব্যাখ্যা: ক্ষারীয় পটাশিয়াম টেট্রাআয়োডোমারকিউরেট ($K_2[HgI_4]$) দ্রবণ বা নেসলার বিকারক অ্যামোনিয়া গ্যাসের সাথে বিক্রিয়া করে বাদামি রঙের আয়োডাইড অফ মিলন্স বেস তৈরি করে।" },
+            { q: "সালফারের কোন রূপভেদটি ঘরের উয়তায় (সাধারণ তাপমাত্রায়) সর্বাধিক স্থিতিশীল?", opts: ["রম্বিক বা $\\alpha$-সালফার", "মনোক্লিনিক বা $\\beta$-সালফার", "প্লাস্টিক সালফার", "কোলয়ডীয় সালফার"], ans: 0, exp: "ব্যাখ্যা: ঘরের উয়তায় সালফারের রম্বিক রূপভেদটি তাপগতীয়ভাবে সবচেয়ে বেশি স্থিতিশীল। প্রায় 369 K (96°C) তাপমাত্রার উপরে এটি মনোক্লিনিক সালফারে পরিণত হয়।" },
+            { q: "হ্যালোজেন পরমাণুগুলির ইলেকট্রন-গ্রহণ এনথ্যালপির (ইলেকট্রন-আসক্তি) সঠিক ক্রম কোনটি?", opts: ["F > Cl > Br > I", "Cl > F > Br > I", "I > Br > Cl > F", "F > Br > Cl > I"], ans: 1, exp: "ব্যাখ্যা: ফ্লোরিনের আকার অত্যন্ত ছোটো হওয়ায় আগত ইলেকট্রন তীব্র বিকর্ষণ অনুভব করে, তাই ক্লোরিনের ইলেকট্রন-গ্রহণ এনথ্যালপি ফ্লোরিনের চেয়েও অধিক ঋণাত্মক (বেশি) হয়।" },
+            { q: "কোন্ হ্যালোজেনটি ঘরের তাপমাত্রায় এবং 1 বায়ুমণ্ডলীয় চাপে কঠিন অবস্থায় থাকে?", opts: ["$F_2$", "$Cl_2$", "$Br_2$", "$I_2$ (আয়োডিন)"], ans: 3, exp: "ব্যাখ্যা: হ্যালোজেনগুলির মধ্যে আণবিক ভর সবচেয়ে বেশি হওয়ায় আয়োডিন অণুগুলির মধ্যে ভ্যান ডার ওয়ালস আকর্ষণ বল সর্বাধিক হয়, তাই এটি সাধারণ অবস্থায় কঠিন পদার্থ।" }
+        ]
+    },
+    20: {
+        name: 'Set 20', icon: '🏆', topic: 'p-ব্লক মৌলসমূহ (আল্টিমেট রিভিশন সেট)',
+        questions: [
+            { q: "$XeF_6$ এর সম্পূর্ণ আর্দ্রবিশ্লেষণের ফলে প্রধানত কোন যৌগটি উৎপন্ন হয়?", opts: ["$XeOF_4$", "$XeO_2F_2$", "$XeO_3$", "Xe (জেনন গ্যাস)"], ans: 2, exp: "ব্যাখ্যা: 3 অণু জলের সাথে জেনন হেক্সাফ্লুরাইডের সম্পূর্ণ আর্দ্রবিশ্লেষণ ঘটলে বিস্ফোরক প্রকৃতির জেনন ট্রাইঅক্সাইড ($XeO_3$) এবং HF উৎপন্ন হয়।" },
+            { q: "সাদা ফসফরাস ($P_4$) কস্টিক সোডা (NaOH) দ্রবণের সাথে বিক্রিয়া করে ফসফিন ($PH_3$) এবং সোডিয়াম হাইপোফসফাইট ($NaH_2PO_2$) তৈরি করে। এটি কোন ধরনের বিক্রিয়ার উদাহরণ?", opts: ["জারণ বিক্রিয়া", "বিজারণ বিক্রিয়া", "ডিসপ্রোপরসনেশন (অসমঞ্জস) বিক্রিয়া", "সংযোজন বিক্রিয়া"], ans: 2, exp: "ব্যাখ্যা: এই বিক্রিয়ায় ফসফরাসের জারণ সংখ্যা শূন্য থেকে বৃদ্ধি পেয়ে +1 ($NaH_2PO_2$) এবং হ্রাস পেয়ে -3 ($PH_3$) হয়। একই মৌলের একইসাথে জারণ ও বিজারণ ঘটাকে ডিসপ্রোপরসনেশন বিক্রিয়া বলে।" },
+            { q: "সাধারণ তাপমাত্রায় ক্লোরিন-জলকে ঠান্ডা করলে যে কেলাস গঠিত হয় তার সংকেত কী?", opts: ["$Cl_2 \\cdot 4H_2O$", "$Cl_2 \\cdot 8H_2O$", "$HCl \\cdot H_2O$", "$Cl_2 \\cdot 2H_2O$"], ans: 1, exp: "ব্যাখ্যা: ক্লোরিন গ্যাসকে জলের সাথে মিশিয়ে অতিরিক্ত ঠান্ডা করলে সবুজাভ-হলুদ বর্ণের ক্লোরিন হাইড্রেট কেলাস ($Cl_2 \\cdot 8H_2O$) তৈরি হয়।" },
+            { q: "নিচের কোনটি পরাচুম্বকীয় (Paramagnetic) গ্যাস?", opts: ["$Cl_2O$", "$Cl_2O_6$", "$ClO_2$", "$Cl_2O_7$"], ans: 2, exp: "ব্যাখ্যা: ক্লোরিন ডাইঅক্সাইড ($ClO_2$) যৌগে ক্লোরিন ও অক্সিজেনের মোট ইলেকট্রন সংখ্যা বিজোড় (33টি)। এতে একটি অযুগ্ম ইলেকট্রন উপস্থিত থাকায় এটি পরাচৌম্বকীয় আচরণ প্রদর্শন করে।" },
+            { q: "ব্রোমিন ($Br_2$) বাষ্পের রং কীরূপ হয়?", opts: ["সবুজাভ-হলুদ", "বেগুনি", "লাল-বাদামি", "ফ্যাকাশে হলুদ"], ans: 2, exp: "ব্যাখ্যা: ব্রোমিন ঘরের তাপমাত্রায় একটি গাঢ় লাল-বাদামি উদ্বায়ী তরল এবং এর বাষ্পও লালচে-বাদামি রঙের হয়।" },
+            { q: "ফ্লুরিন ($F_2$) তীব্রভাবে জলের সাথে বিক্রিয়া করে কী উৎপন্ন করে?", opts: ["শুধুমাত্র HF এবং $O_2$", "শুধুমাত্র HF এবং $O_3$", "HF, $O_2$ এবং $O_3$", "HF এবং $OF_2$"], ans: 2, exp: "ব্যাখ্যা: ফ্লুরিন অত্যন্ত তীব্র জারক। এটি জলের সাথে বিক্রিয়া করে জলকে জারিত করে অক্সিজেন ($O_2$) এবং ওজোন ($O_3$) উভয়ই উৎপন্ন করে এবং নিজে বিজারিত হয়ে HF গঠন করে।" },
+            { q: "কোন নিষ্ক্রিয় গ্যাসটিকে তুলনামূলকভাবে অতি সহজে তরলে পরিণত করা যায়?", opts: ["হিলিয়াম (He)", "নিয়ন (Ne)", "আর্গন (Ar)", "জেনন (Xe)"], ans: 3, exp: "ব্যাখ্যা: নিষ্ক্রিয় গ্যাসগুলোর মধ্যে জেননের পারমাণবিক আকার এবং আণবিক ভর সবচেয়ে বড়ো হওয়ায় এর অণুগুলোর মধ্যে ভ্যান ডার ওয়ালস আকর্ষণ বল সবচেয়ে বেশি। ফলে একে সহজে তরল করা যায়।" },
+            { q: "ভাস্বর ইলেকট্রিক বাল্বে (টাংস্টেন ফিলামেন্টযুক্ত বাল্বে) বায়ুর পরিবর্তে কোন নিষ্ক্রিয় গ্যাস ব্যবহার করা হয়?", opts: ["হিলিয়াম", "আর্গন", "ক্রিপ্টন", "জেনন"], ans: 1, exp: "ব্যাখ্যা: আর্গন একটি নিষ্ক্রিয় গ্যাস। উচ্চ তাপমাত্রায় টাংস্টেন ফিলামেন্ট বাতাসের অক্সিজেনে পুড়ে যেতে পারে, কিন্তু আর্গনের নিষ্ক্রিয় পরিবেশ ফিলামেন্টকে জারণের হাত থেকে রক্ষা করে এবং দীর্ঘস্থায়ী করে।" },
+            { q: "সালফার ডাইঅক্সাইড ($SO_2$) জলীয় দ্রবণে বিজারক হিসেবে কাজ করে। এটি বেগুনি বর্ণের $KMnO_4$ দ্রবণকে বিজারিত করে কোন বর্ণে পরিণত করে?", opts: ["সবুজ", "হলুদ", "বর্ণহীন", "নীল"], ans: 2, exp: "ব্যাখ্যা: আম্লিক পটাশিয়াম পারম্যাঙ্গানেট দ্রবণে $SO_2$ গ্যাস চালনা করলে এটি পারম্যাঙ্গানেটকে বিজারিত করে ম্যাঙ্গানাস লবণে ($Mn^{2+}$) পরিণত করে, ফলে দ্রবণের বেগুনি বর্ণ সম্পূর্ণ বর্ণহীন হয়ে যায়।" },
+            { q: "কাচের ওপর খোদাই (Etching of glass) করতে কোন হ্যালোজেন অ্যাসিডটি ব্যবহৃত হয়?", opts: ["HCl", "HBr", "HI", "HF"], ans: 3, exp: "ব্যাখ্যা: হাইড্রোফ্লুরিক অ্যাসিড (HF) কাচের মূল উপাদান সিলিকা ($SiO_2$)-এর সাথে বিক্রিয়া করে সিলিকন টেট্রাফ্লুরাইড বা হেক্সাফ্লুরোসিলিসিক অ্যাসিড তৈরি করে কাচকে গলিয়ে দেয়, তাই একে কাচ খোদাই করতে ব্যবহার করা হয়।" },
+            { q: "সায়ানাইড ($CN^-$), থায়োসায়ানেট ($SCN^-$) প্রভৃতি আয়নগুলোকে কী বলা হয়?", opts: ["পলিহ্যালোজেন", "ছদ্ম হ্যালোজেন (Pseudohalogen)", "আন্তঃহ্যালোজেন", "রেডিও-হ্যালোজেন"], ans: 1, exp: "ব্যাখ্যা: এই আয়নগুলো হ্যালোজেন মৌল না হয়েও এদের রাসায়নিক ধর্ম হ্যালোজেন অ্যানায়নের ($Cl^-, Br^-$) মতোই হয়, তাই এদের ছদ্ম হ্যালোজেন বলা হয়।" },
+            { q: "$ICl_2^-$ আয়নে আয়োডিনের সংকরায়িত অবস্থা কী?", opts: ["$sp^3$", "$sp^2$", "$sp^3d$", "$sp^3d^2$"], ans: 2, exp: "ব্যাখ্যা: $ICl_2^-$ আয়নে কেন্দ্রীয় আয়োডিন পরমাণুর চারদিকে ২টি বন্ড-পেয়ার এবং ৩টি লোন-পেয়ার থাকে (মোট ৫টি ডোমেন)। এর ফলে এর সংকরায়ণ $sp^3d$ এবং আকৃতি সরলরৈখিক হয়।" },
+            { q: "নাইট্রোনিয়াম ($NO_2^+$) আয়নের আকৃতি কীরূপ?", opts: ["সরলরৈখিক", "কৌণিক", "পিরামিডীয়", "সমতলীয় ত্রিভুজাকার"], ans: 0, exp: "ব্যাখ্যা: $NO_2^+$ আয়নে নাইট্রোজেনের কোনো লোন-পেয়ার থাকে না এবং এটি sp সংকরায়িত অবস্থায় থাকে, তাই এর আকৃতি $CO_2$-এর মতোই সম্পূর্ণ সরলরৈখিক (Linear) হয়।" },
+            { q: "ওলিয়াম বা পাইরোসালফিউরিক অ্যাসিড ($H_2S_2O_7$) যৌগে উপস্থিত সালফার পরমাণুর জারণ সংখ্যা কত?", opts: ["+4", "+5", "+6", "+7"], ans: 2, exp: "ব্যাখ্যা: $H_2S_2O_7$-এ সালফারের জারণ সংখ্যা হিসাব করলে: $2(+1) + 2x + 7(-2) = 0$, বা $2x = 12$, বা $x = +6$ পাওয়া যায়। এটি সালফারের সর্বোচ্চ জারণ অবস্থা।" },
+            { q: "কোন অ্যাসিডটি তিন প্রকারের সোডিয়াম লবণ গঠন করতে পারে?", opts: ["$H_3PO_2$", "$H_3PO_3$", "$H_3PO_4$", "$HNO_3$"], ans: 2, exp: "ব্যাখ্যা: অর্থোফসফরিক অ্যাসিড একটি ত্রি-ক্ষারীয় অ্যাসিড। এতে তিনটি প্রতিস্থাপনযোগ্য হাইড্রোজেন থাকায় এটি ক্ষারের সাথে বিক্রিয়া করে তিনটি ভিন্ন লবণ ($NaH_2PO_4, Na_2HPO_4, Na_3PO_4$) গঠন করতে পারে।" }
+        ]
+    }
+};
+
+// ================== STATE VARIABLES ==================
+let currentUser = "";
+let activeSetId = null;
+let questions = [];
+let currentQIndex = 0;
+let score = 0;
+let wrongAnswers = 0;
+let isReviewMode = false;
+let timerInterval;
+let timeLeft = TIME_LIMIT;
+let userAnswers = {};
+
+// ================== LOCAL STORAGE LOGIC ==================
+function getGlobalUsers() {
+    const data = localStorage.getItem("testBazarGlobalUsers");
+    return data ? JSON.parse(data) : {};
+}
+
+function getAttemptsData() {
+    const data = localStorage.getItem("testBazarAttemptsChem2_Special_v1");
+    return data ? JSON.parse(data) : {};
+}
+
+function getAttemptCount(username, setId) {
+    const attempts = getAttemptsData();
+    const key = username + '|' + setId;
+    return attempts[key] || 0;
+}
+
+function incrementAttempt(username, setId) {
+    const attempts = getAttemptsData();
+    const key = username + '|' + setId;
+    attempts[key] = (attempts[key] || 0) + 1;
+    localStorage.setItem("testBazarAttemptsChem2_Special_v1", JSON.stringify(attempts));
+    return attempts[key];
+}
+
+// ================== INITIALIZATION ==================
+window.onload = () => {
+    renderHub();
+};
+
+function renderHub() {
+    const grid = document.getElementById("setGrid");
+    grid.innerHTML = "";
+    
+    for(let id in ALL_SETS) {
+        const set = ALL_SETS[id];
+        const div = document.createElement("div");
+        div.className = "set-card";
+        
+        let attemptCount = 0;
+        let isLocked = false;
+        
+        if (currentUser) {
+            attemptCount = getAttemptCount(currentUser, id);
+            isLocked = attemptCount >= MAX_ATTEMPTS;
+            if (isLocked) div.classList.add("locked");
+        }
+        
+        div.innerHTML = `
+            <div class="icon">${set.icon}</div>
+            <div class="set-num">${set.name}</div>
+            <div class="set-title">${set.topic}</div>
+            <div class="set-meta"><span>${set.questions.length} Qs</span><span>10 Mins</span></div>
+            ${currentUser ? `<div class="attempt-badge ${isLocked?'locked-badge':''}">${isLocked ? '🔒 Locked' : attemptCount + '/' + MAX_ATTEMPTS}</div>` : ''}
+        `;
+        
+        div.onclick = () => {
+            if (isLocked) {
+                alert(`⚠️ আপনি এই সেটের সর্বোচ্চ ${MAX_ATTEMPTS} বার Test দিয়েছেন।`);
+                return;
+            }
+            handleSetClick(id);
+        };
+        grid.appendChild(div);
+    }
+    // Reprocess math equations
+    if (window.MathJax) MathJax.typesetPromise();
+}
+
+function handleSetClick(setId) {
+    activeSetId = setId;
+    if (!currentUser) {
+        document.getElementById("loginSetName").innerText = `📚 ${ALL_SETS[setId].name}`;
+        document.getElementById("loginOverlay").classList.add("active");
+        document.getElementById("loginUsername").value = "";
+        document.getElementById("loginPassword").value = "";
+        document.getElementById("loginError").style.display = "none";
+    } else {
+        startQuiz(setId);
+    }
+}
+
+function doLogin() {
+    const u = document.getElementById("loginUsername").value.trim();
+    const p = document.getElementById("loginPassword").value.trim();
+    const err = document.getElementById("loginError");
+    const GLOBAL_USERS = getGlobalUsers();
+
+    if(!u || !p) {
+        err.innerText = "ইউজারনেম এবং পাসওয়ার্ড দিন!";
+        err.style.display = "block";
+        return;
+    }
+
+    if(GLOBAL_USERS[u] && GLOBAL_USERS[u] === p) {
+        let attempts = getAttemptCount(u, activeSetId);
+        if (attempts >= MAX_ATTEMPTS) {
+            err.innerText = `আপনি এই সেটে সর্বোচ্চ ${MAX_ATTEMPTS} বার পরীক্ষা দিয়েছেন!`;
+            err.style.display = "block";
+            return;
+        }
+        currentUser = u;
+        document.getElementById("loginOverlay").classList.remove("active");
+        document.getElementById("userDisplay").innerHTML = `👤 ${u}`;
+        document.getElementById("userDisplay").classList.remove("hidden");
+        renderHub(); 
+        startQuiz(activeSetId);
+    } else {
+        err.innerText = "ইউজারনেম বা পাসওয়ার্ড ভুল! (Index থেকে চেক করুন)";
+        err.style.display = "block";
+    }
+}
+
+function closeLogin() {
+    document.getElementById("loginOverlay").classList.remove("active");
+}
+
+function goToHub() {
+    document.getElementById("resultWrap").classList.remove("show");
+    document.getElementById("testArea").classList.add("hidden");
+    document.getElementById("hubPage").style.display = "block";
+    document.getElementById("timerBox").classList.add("hidden");
+    clearInterval(timerInterval);
+    renderHub();
+}
+
+// ================== QUIZ LOGIC ==================
+function startQuiz(setId) {
+    incrementAttempt(currentUser, setId);
+    questions = ALL_SETS[setId].questions;
+    currentQIndex = 0;
+    score = 0;
+    wrongAnswers = 0;
+    userAnswers = {};
+    isReviewMode = false;
+    timeLeft = TIME_LIMIT;
+
+    document.getElementById("hubPage").style.display = "none";
+    document.getElementById("resultWrap").classList.remove("show");
+    document.getElementById("testArea").classList.remove("hidden");
+    document.getElementById("timerBox").classList.remove("hidden");
+    
+    document.getElementById("testSetLabel").innerText = ALL_SETS[setId].name;
+    document.getElementById("testTopic").innerText = ALL_SETS[setId].topic;
+    
+    startTimer();
+    loadQuestion();
+}
+
+function loadQuestion() {
+    const qData = questions[currentQIndex];
+    document.getElementById("qNum").innerText = `প্রশ্ন ${currentQIndex + 1} / ${questions.length}`;
+    document.getElementById("qText").innerText = qData.q;
+    
+    const progress = ((currentQIndex) / questions.length) * 100;
+    document.getElementById("progressFill").style.width = `${progress}%`;
+    document.getElementById("scoreShow").innerText = `সঠিক: ${score} | ভুল: ${wrongAnswers}`;
+    
+    const optsBox = document.getElementById("qOpts");
+    optsBox.innerHTML = "";
+    document.getElementById("explanation").classList.remove("show");
+    
+    document.getElementById("nextBtn").disabled = true;
+    document.getElementById("nextBtn").innerText = (currentQIndex === questions.length - 1) && !isReviewMode ? "টেস্ট জমা দিন" : "পরবর্তী →";
+
+    qData.opts.forEach((optText, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "opt";
+        btn.innerHTML = `<div class="opt-circle">${LABELS[idx]}</div> <div class="opt-text">${optText}</div>`;
+        
+        if (isReviewMode) {
+            btn.classList.add("disabled");
+            if (idx === qData.ans) btn.classList.add("correct");
+            else if (userAnswers[currentQIndex] === idx) btn.classList.add("wrong");
+        } else {
+            btn.onclick = () => selectOption(btn, idx, qData.ans, qData.exp);
+        }
+        optsBox.appendChild(btn);
+    });
+
+    if (isReviewMode) {
+        document.getElementById("explanationText").innerHTML = `<strong>ব্যাখ্যা:</strong> ${qData.exp.replace('ব্যাখ্যা: ', '')}`;
+        document.getElementById("explanation").classList.add("show");
+        document.getElementById("nextBtn").disabled = false;
+        if (currentQIndex === questions.length - 1) {
+            document.getElementById("nextBtn").innerText = "ফলাফলে ফিরুন";
+        }
+    }
+    
+    // Reprocess math equations for every new question
+    if (window.MathJax) MathJax.typesetPromise();
+}
+
+function selectOption(btn, selectedIdx, correctIdx, exp) {
+    const allBtns = document.getElementById("qOpts").querySelectorAll(".opt");
+    allBtns.forEach(b => b.classList.add("disabled"));
+    
+    userAnswers[currentQIndex] = selectedIdx;
+    
+    if (selectedIdx === correctIdx) {
+        btn.classList.add("correct");
+        score++;
+    } else {
+        btn.classList.add("wrong");
+        allBtns[correctIdx].classList.add("correct");
+        wrongAnswers++;
+    }
+    
+    document.getElementById("scoreShow").innerText = `সঠিক: ${score} | ভুল: ${wrongAnswers}`;
+    document.getElementById("explanationText").innerHTML = `<strong>ব্যাখ্যা:</strong> ${exp.replace('ব্যাখ্যা: ', '')}`;
+    document.getElementById("explanation").classList.add("show");
+    document.getElementById("nextBtn").disabled = false;
+    
+    if (window.MathJax) MathJax.typesetPromise();
+}
+
+function nextQ() {
+    if (isReviewMode && currentQIndex === questions.length - 1) {
+        document.getElementById("testArea").classList.add("hidden");
+        document.getElementById("resultWrap").classList.add("show");
+        return;
+    }
+    
+    if (!isReviewMode && currentQIndex === questions.length - 1) {
+        finishQuiz();
+        return;
+    }
+    
+    currentQIndex++;
+    loadQuestion();
+}
+
+function startTimer() {
+    clearInterval(timerInterval);
+    const tBox = document.getElementById("timerBox");
+    tBox.classList.remove("danger");
+    
+    timerInterval = setInterval(() => {
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            finishQuiz();
+            return;
+        }
+        timeLeft--;
+        const m = Math.floor(timeLeft / 60);
+        const s = timeLeft % 60;
+        document.getElementById("timerDisplay").innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+        
+        if (timeLeft < 60) tBox.classList.add("danger");
+    }, 1000);
+}
+
+function finishQuiz() {
+    clearInterval(timerInterval);
+    document.getElementById("testArea").classList.add("hidden");
+    document.getElementById("timerBox").classList.add("hidden");
+    document.getElementById("resultWrap").classList.add("show");
+    
+    const total = questions.length;
+    const skipped = total - (score + wrongAnswers);
+    const percent = Math.round((score / total) * 100);
+    
+    document.getElementById("finalScore").innerText = `${percent}%`;
+    document.getElementById("rbCorrect").innerText = score;
+    document.getElementById("rbWrong").innerText = wrongAnswers + skipped;
+    
+    const gradeEl = document.getElementById("resultGrade");
+    if (percent >= 80) { 
+        gradeEl.innerText = "🌟 অসাধারণ পারফরম্যান্স!"; 
+        gradeEl.style.color = "#1a7a4a"; 
+        document.getElementById("resultIcon").innerText = "🏆"; 
+    }
+    else if (percent >= 60) { 
+        gradeEl.innerText = "👍 খুব ভালো!"; 
+        gradeEl.style.color = "#2aad68"; 
+        document.getElementById("resultIcon").innerText = "⭐"; 
+    }
+    else { 
+        gradeEl.innerText = "💪 চেষ্টা চালিয়ে যাও!"; 
+        gradeEl.style.color = "#e8730a"; 
+        document.getElementById("resultIcon").innerText = "📚"; 
+    }
+    
+    const remaining = MAX_ATTEMPTS - getAttemptCount(currentUser, activeSetId);
+    document.getElementById("attemptInfo").innerHTML = `👤 ${currentUser} — বাকি আছে <strong>${remaining}</strong> বার Test দেওয়ার সুযোগ।`;
+}
+
+function restartQuiz() {
+    if (getAttemptCount(currentUser, activeSetId) >= MAX_ATTEMPTS) {
+        alert(`⚠️ আপনি এই সেটের সর্বোচ্চ ${MAX_ATTEMPTS} বার Test দিয়েছেন।`);
+        return;
+    }
+    startQuiz(activeSetId);
+}
+
+function showReview() {
+    isReviewMode = true;
+    currentQIndex = 0;
+    document.getElementById("resultWrap").classList.remove("show");
+    document.getElementById("testArea").classList.remove("hidden");
+    loadQuestion();
+}
+</script>
+
+</body>
+</html>
+```
